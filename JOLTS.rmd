@@ -1,21 +1,16 @@
 ---
 title: "JOLTS Overview"
+fontfamily: libertine
+fontfamilyoptions: sfdefault
 output: 
-  pdf_document:
-  fig_width: 7
-  fig_height: 6
+  html_document:
+  fig_width: 6
+  fig_height: 5
   fig_caption: true
-  extra_dependencies: ["amsmath", "subfig", "fontenc"]
+  extra_dependencies: ["amsmath", "subfig"]
 fontsize: 11pt
-setfont: LiberationSans
-latex_engine: pdflatex
-author:
-  - name: Anthony Eisenbarth
-geometry: margin=1.2in
-indent: yes
+---
 
---- 
-  
   ```{r include = FALSE}
 library(knitr)
 library(lmtest)
@@ -37,11 +32,10 @@ library(fredr)
 
 ```{r include = FALSE}
 raspberry <- "#DB2955"
-saffron <-  "#F49D37"
+turquoise <- "#76E7CD"
 prussian <- "#113255"
 sapphire <- "#255F85"
 ggthemr('fresh')
-
 ```
 
   ```{r include = FALSE}
@@ -79,28 +73,39 @@ Employment estimates are benchmarked, or ratio adjusted, monthly to the strike-a
 
 JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next.
 
+JOLTS estimates are subject to both sampling and nonsampling error. Nonsampling error occurs when a sample 
+is surveyed rather than the entire population. There is a chance that the sample estimates may differ from the true 
+population values they represent. The difference, or sampling error, varies depending on the particular sample 
+selected. This variability is measured by the standard error of the estimate. BLS analysis is generally conducted at the 90-percent level of confidence. That means that there is a 90-percent chance, or level of confidence, that an estimate based on a sample will differ by no more than 1.6 standard errors from the true population value because of  sampling error. Sampling error estimates are available at www.bls.gov/jlt/jolts_median_standard_errors.htm.
 
-```{r dpi = 300,  echo=FALSE, message=FALSE}
+The JOLTS estimates also are affected by nonsampling error. Nonsampling error can occur for many reasons 
+including: the failure to include a segment of the population; the inability to obtain data from all units in the sample; the inability or unwillingness of respondents to provide data on a timely basis; mistakes made by respondents; errors made in the collection or processing of the data; and errors from the employment benchmark data used in estimation.
+
+## Data
+
+One of the most striking indicators from today’s report is the job seekers ratio, that is, the ratio of unemployed workers (averaged for mid-November and mid-December) to job openings (at the end of November). On average, there were 10.7 million unemployed workers while there were only 6.5 million job openings. This translates into a job seeker ratio of about 1.6 unemployed workers to every job opening. Another way to think about this: for every 16 workers who were officially counted as unemployed, there were only available jobs for 10 of them.
+
+```{r dpi = 720, fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = unemployed/openings)) +
-  geom_line(color = sapphire) + 
+  geom_line(color = prussian) + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
-        plot.caption = element_text(hjust = 0.5, size = 8)) +
+        plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
   labs(y = "Job Seekers Ratio \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```       
        
-```{r dpi = 300, echo = FALSE, message=FALSE}
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = unemployed/(unemployed + employed))) +
   geom_line(color = prussian) +
-  geom_line(aes(y = openings/(unemployed + employed)), color = sapphire) +
+  geom_line(aes(y = openings/(unemployed + employed)), color = raspberry) +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
@@ -113,21 +118,37 @@ JOLTS data provide information on all pieces that go into the net change in the 
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
-```{r dpi = 300, echo = FALSE, message=FALSE}
-  df %>%
-  ggplot(aes(x = date, y = hires/(unemployed + employed))) +
-  geom_line(color = prussian) +
-  geom_line(aes(y = hires/(unemployed + employed)), color = sapphire) +
-  theme(panel.grid.major.x = element_blank(),
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+ df %>%
+  mutate(Hires = hires/employed,
+         Quits = quits/employed,
+         Layoffs = layoffs/employed) %>%
+  gather(measure, value, Hires, Quits, Layoffs) %>%
+    ggplot(aes(x = date, y = value, colour = measure)) +
+    geom_line() +
+    theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
+  scale_color_manual("",values = c(prussian, turquoise, raspberry)) +
   theme(text = element_text(color = "black", size = 10)) + 
   labs(y = "Percent \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
 
+# Methods
+
+We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that:  a model. As such, all statistical models are “wrong.” No matter the method used, any model is attempt to reproduce (“model”) the true data generating process of a data series. 
+
+An autoregressive integrated moving average (ARIMA) model is a generalization of an autoregressive moving average (ARMA) model. Both of these models are fitted to time series data either to better understand the data or to predict future points in the series (forecasting). ARIMA models are applied in some cases where data show evidence of non-stationarity in the sense of mean, where an initial differencing step (corresponding to the "integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function (that is, the trend).
+
+When there is seasonality shows in the time series,  seasonal-differencing could be applied to eliminate the seasonal component. As the ARMA model, according to the Wold's decomposition theorem, is theoretically sufficient to describe a wide-sense stationary time series, we are motivated to make stationary a non-stationary time series, for example, by using differencing, before we can use the ARMA model.
+
+The AR part of ARIMA indicates that the evolving variable of interest is regressed on its own lagged (i.e., prior) values. The MA part indicates that the regression error is actually a linear combination of error terms whose values occurred contemporaneously and at various times in the past.The I (for "integrated") indicates that the data values have been replaced with the difference between their values and the previous values (and this differencing process may have been performed more than once). The purpose of each of these features is to make the model fit the data as well as possible.
+
+
+$$\sum_{i=1}^n X_i$$
