@@ -1,0 +1,126 @@
+---
+  output: 
+  pdf_document:
+  citation_package: natbib
+keep_tex: true
+fig_caption: true
+latex_engine: pdflatex
+title: "JOLTS"
+author:
+  - name: Anthony Eisenbarth
+geometry: margin=1in
+fontfamily: mathpazo
+fontsize: 11pt
+indent: yes
+colorlinks: true
+
+--- 
+  
+  ```{r include = FALSE}
+library(knitr)
+library(lmtest)
+library(ggplot2)
+library(tinytex)
+library(ggthemes)
+library(sjPlot)
+library(sjmisc)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(blscrapeR)
+library(purrr)
+library(lubridate)
+library(zoo)
+library(fredr)
+```
+  ```{r include = FALSE}
+# get and wrangle data
+
+reformat <- 
+  function(df){
+    pivot_wider(df, names_from = series_id, values_from = value) %>%
+      rename(openings = JTSJOL, 
+             hires = JTSHIL,
+             separations = JTSTSL,
+             quits = JTSQUL,
+             layoffs = JTSLDL,
+             unemployed = UNEMPLOY,
+             employed = PAYEMS) %>%
+      mutate(date = ymd(date)) %>%
+      filter(date >= "2001-01-01") %>%
+      relocate(date)
+  }
+
+df <-
+  map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL"), fredr) %>%
+  reformat()
+```
+
+
+```{r include = FALSE}
+plot1 <-
+  df %>%
+  ggplot(aes(x = date, y = unemployed/openings)) +
+  geom_line(color = sapphire) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.caption = element_text(hjust = 0.5, size = 8)) +
+  scale_y_continuous(position = "right") +
+  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  labs(y = "Job Seekers Ratio \n", x = "", fill = "",
+       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+```       
+       
+```{r include = FALSE}
+plot2 <-
+  df %>%
+  ggplot(aes(x = date, y = unemployed/(unemployed + employed))) +
+  geom_point(color = prussian) +
+  geom_point(aes(y = openings/(unemployed + employed)), color = sapphire) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+    plot.title = element_text(size = rel(1.5), hjust = 0.5),
+    plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(label = percent_format(), position = "right") +
+  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  labs(y = "Beveridge \n", x = "", fill = "",
+       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+```
+
+```{r include = FALSE}
+plot3 <-
+  df %>%
+  ggplot(aes(x = date, y = hires/(unemployed + employed))) +
+  geom_point(color = prussian) +
+  geom_point(aes(y = hires/(unemployed + employed)), color = sapphire) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(label = percent_format(), position = "right") +
+  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  labs(y = "Beveridge \n", x = "", fill = "",
+       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+```
+
+
+```{r, fig.width = 7.5, fig.height = 6.5}
+plot1
+```
+
+
+```{r, fig.width = 7.5, fig.height = 6.5}
+plot2
+```
+
+```{r, fig.width = 7.5, fig.height = 6.5}
+plot3
+```
+
