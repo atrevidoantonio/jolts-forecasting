@@ -5,17 +5,14 @@ output:
   fig_width: 7
   fig_height: 6
   fig_caption: true
-  extra_dependencies: ["amsmath", "subfig"]
+  extra_dependencies: ["amsmath", "subfig", "fontenc"]
 fontsize: 11pt
-keep_tex: true
-fig_caption: true
+setfont: LiberationSans
 latex_engine: pdflatex
 author:
   - name: Anthony Eisenbarth
-geometry: margin=1in
-fontfamily: mathpazo
+geometry: margin=1.2in
 indent: yes
-colorlinks: true
 
 --- 
   
@@ -36,6 +33,7 @@ library(purrr)
 library(lubridate)
 library(zoo)
 library(fredr)
+```
 
 ```{r include = FALSE}
 raspberry <- "#DB2955"
@@ -47,6 +45,9 @@ ggthemr('fresh')
 ```
 
   ```{r include = FALSE}
+  # FRED API Key
+fredr_set_key("5feffa6d832eea67340b601a7e183d01")
+
 # get and wrangle data
 reformat <- 
   function(df){
@@ -66,8 +67,9 @@ reformat <-
 df <-
   map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL"), fredr) %>%
   reformat()
-```
-#Introduction
+  ```
+
+# Introduction
 The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
 
 The JOLTS survey design is a stratified random sample of 20,700 nonfarm business and government 
@@ -78,8 +80,7 @@ Employment estimates are benchmarked, or ratio adjusted, monthly to the strike-a
 JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next.
 
 
-```{r include = FALSE}
-plot1 <-
+```{r dpi = 300,  echo=FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = unemployed/openings)) +
   geom_line(color = sapphire) + 
@@ -90,13 +91,12 @@ plot1 <-
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 0.5, size = 8)) +
   scale_y_continuous(position = "right") +
-  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
+  theme(text = element_text(color = "black", size = 10)) + 
   labs(y = "Job Seekers Ratio \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```       
        
-```{r include = FALSE}
-plot2 <-
+```{r dpi = 300, echo = FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = unemployed/(unemployed + employed))) +
   geom_line(color = prussian) +
@@ -108,13 +108,12 @@ plot2 <-
     plot.title = element_text(size = rel(1.5), hjust = 0.5),
     plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
-  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
-  labs(y = "Beveridge \n", x = "", fill = "",
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Percent \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
-```{r include = FALSE}
-plot3 <-
+```{r dpi = 300, echo = FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = hires/(unemployed + employed))) +
   geom_line(color = prussian) +
@@ -126,22 +125,9 @@ plot3 <-
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
-  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
-  labs(y = "Beveridge \n", x = "", fill = "",
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Percent \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
-
-```{r, fig.width = 7.5, fig.height = 6.5}
-plot1
-```
-
-
-```{r, fig.width = 7.5, fig.height = 6.5}
-plot2
-```
-
-```{r, fig.width = 7.5, fig.height = 6.5}
-plot3
-```
 
