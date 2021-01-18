@@ -10,12 +10,10 @@ fontsize: 11pt
 keep_tex: true
 fig_caption: true
 latex_engine: pdflatex
-title: "JOLTS"
 author:
   - name: Anthony Eisenbarth
 geometry: margin=1in
 fontfamily: mathpazo
-fontsize: 11pt
 indent: yes
 colorlinks: true
 
@@ -29,6 +27,7 @@ library(tinytex)
 library(ggthemes)
 library(sjPlot)
 library(sjmisc)
+library(extrafont)
 library(tidyverse)
 library(dplyr)
 library(tidyr)
@@ -37,10 +36,17 @@ library(purrr)
 library(lubridate)
 library(zoo)
 library(fredr)
+
+```{r include = FALSE}
+raspberry <- "#DB2955"
+saffron <-  "#F49D37"
+prussian <- "#113255"
+sapphire <- "#255F85"
 ```
+
+
   ```{r include = FALSE}
 # get and wrangle data
-
 reformat <- 
   function(df){
     pivot_wider(df, names_from = series_id, values_from = value) %>%
@@ -60,7 +66,6 @@ df <-
   map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL"), fredr) %>%
   reformat()
 ```
-
 
 ```{r include = FALSE}
 plot1 <-
