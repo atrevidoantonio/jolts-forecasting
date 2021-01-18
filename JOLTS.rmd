@@ -1,7 +1,12 @@
 ---
-  output: 
+title: "JOLTS Overview"
+output: 
   pdf_document:
-  citation_package: natbib
+  fig_width: 7
+  fig_height: 6
+  fig_caption: true
+  extra_dependencies: ["amsmath", "subfig"]
+fontsize: 11pt
 keep_tex: true
 fig_caption: true
 latex_engine: pdflatex
