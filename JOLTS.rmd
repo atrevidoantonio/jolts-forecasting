@@ -13,7 +13,6 @@ fontsize: 11pt
 
   ```{r include = FALSE}
 library(knitr)
-library(lmtest)
 library(ggplot2)
 library(tinytex)
 library(ggthemes)
@@ -32,7 +31,7 @@ library(fredr)
 
 ```{r include = FALSE}
 raspberry <- "#DB2955"
-turquoise <- "#76E7CD"
+babyblue <- "#47AFFF"
 prussian <- "#113255"
 sapphire <- "#255F85"
 ggthemr('fresh')
@@ -133,7 +132,28 @@ One of the most striking indicators from today’s report is the job seekers rat
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
-  scale_color_manual("",values = c(prussian, turquoise, raspberry)) +
+  scale_color_manual("",values = c(prussian, babyblue, raspberry)) +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Percent \n", x = "", fill = "",
+       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+```
+
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+ df %>%
+  mutate(Hires = hires - lag(hires, n = 1, fill = NA),
+         Quits = quits - lag(quits, n = 1, fill = NA),
+         Layoffs = layoffs - lag(layoffs, n = 1, fill = NA)) %>%
+  gather(measure, value, Hires, Quits, Layoffs) %>%
+  ggplot(aes(x = date, y = value, colour = measure)) +
+  geom_line() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(label = percent_format(), position = "right") +
+  scale_color_manual("",values = c(prussian, babyblue, raspberry)) +
   theme(text = element_text(color = "black", size = 10)) + 
   labs(y = "Percent \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
@@ -144,11 +164,11 @@ One of the most striking indicators from today’s report is the job seekers rat
 
 We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that:  a model. As such, all statistical models are “wrong.” No matter the method used, any model is attempt to reproduce (“model”) the true data generating process of a data series. 
 
-An autoregressive integrated moving average (ARIMA) model is a generalization of an autoregressive moving average (ARMA) model. Both of these models are fitted to time series data either to better understand the data or to predict future points in the series (forecasting). ARIMA models are applied in some cases where data show evidence of non-stationarity in the sense of mean, where an initial differencing step (corresponding to the "integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function (that is, the trend).
+An autoregressive integrated moving average (ARIMA) model is a generalization of an autoregressive moving average (ARMA) model. ARIMA models are applied in some cases where data show evidence of non-stationarity in the sense of mean, where an initial differencing step (corresponding to the "integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function (that is, the trend).
 
-When there is seasonality shows in the time series,  seasonal-differencing could be applied to eliminate the seasonal component. As the ARMA model, according to the Wold's decomposition theorem, is theoretically sufficient to describe a wide-sense stationary time series, we are motivated to make stationary a non-stationary time series, for example, by using differencing, before we can use the ARMA model.
+When seasonality shows in the time series,  seasonal-differencing can be applied to eliminate the seasonal component. As the ARMA model, according to the Wold's decomposition theorem, is theoretically sufficient to describe a wide-sense stationary time series, we are motivated to make stationary a non-stationary time series, for example, by using differencing, before we can use the ARMA model.
 
-The AR part of ARIMA indicates that the evolving variable of interest is regressed on its own lagged (i.e., prior) values. The MA part indicates that the regression error is actually a linear combination of error terms whose values occurred contemporaneously and at various times in the past.The I (for "integrated") indicates that the data values have been replaced with the difference between their values and the previous values (and this differencing process may have been performed more than once). The purpose of each of these features is to make the model fit the data as well as possible.
+The AR part of ARIMA indicates that the evolving variable of interest is regressed on its own lagged (that is, prior) values. The MA part indicates that the regression error is actually a linear combination of error terms whose values occurred contemporaneously and at various times in the past.The I (for "integrated") indicates that the data values have been replaced with the difference between their values and the previous values (and this differencing process may have been performed more than once). The purpose of each of these features is to make the model fit the data as well as possible.
 
 
 $$\sum_{i=1}^n X_i$$
