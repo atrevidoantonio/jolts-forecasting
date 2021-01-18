@@ -25,9 +25,8 @@ library(lmtest)
 library(ggplot2)
 library(tinytex)
 library(ggthemes)
-library(sjPlot)
-library(sjmisc)
 library(extrafont)
+library(ggthemr)
 library(tidyverse)
 library(dplyr)
 library(scales)
@@ -43,8 +42,9 @@ raspberry <- "#DB2955"
 saffron <-  "#F49D37"
 prussian <- "#113255"
 sapphire <- "#255F85"
-```
+ggthemr('fresh')
 
+```
 
   ```{r include = FALSE}
 # get and wrangle data
@@ -68,6 +68,12 @@ df <-
   reformat()
 ```
 
+
+The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
+
+JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next.
+
+
 ```{r include = FALSE}
 plot1 <-
   df %>%
@@ -80,7 +86,7 @@ plot1 <-
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 0.5, size = 8)) +
   scale_y_continuous(position = "right") +
-  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
   labs(y = "Job Seekers Ratio \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```       
@@ -89,8 +95,8 @@ plot1 <-
 plot2 <-
   df %>%
   ggplot(aes(x = date, y = unemployed/(unemployed + employed))) +
-  geom_point(color = prussian) +
-  geom_point(aes(y = openings/(unemployed + employed)), color = sapphire) +
+  geom_line(color = prussian) +
+  geom_line(aes(y = openings/(unemployed + employed)), color = sapphire) +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
@@ -98,7 +104,7 @@ plot2 <-
     plot.title = element_text(size = rel(1.5), hjust = 0.5),
     plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
-  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
   labs(y = "Beveridge \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
@@ -107,8 +113,8 @@ plot2 <-
 plot3 <-
   df %>%
   ggplot(aes(x = date, y = hires/(unemployed + employed))) +
-  geom_point(color = prussian) +
-  geom_point(aes(y = hires/(unemployed + employed)), color = sapphire) +
+  geom_line(color = prussian) +
+  geom_line(aes(y = hires/(unemployed + employed)), color = sapphire) +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
@@ -116,7 +122,7 @@ plot3 <-
         plot.title = element_text(size = rel(1.5), hjust = 0.5),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
-  theme(text = element_text(family = "Segoe UI", color = "black", size = 10)) + 
+  theme(text = element_text(family = "Microsoft Sans Serif", color = "black", size = 10)) + 
   labs(y = "Beveridge \n", x = "", fill = "",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
