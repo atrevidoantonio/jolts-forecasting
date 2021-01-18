@@ -67,9 +67,13 @@ df <-
   map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL"), fredr) %>%
   reformat()
 ```
-
-
+#Introduction
 The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
+
+The JOLTS survey design is a stratified random sample of 20,700 nonfarm business and government 
+establishments. The sample is stratified by ownership, region, industry sector, and establishment size class. The  establishments are drawn from a universe of over 9.4 million establishments compiled by the Quarterly Census of Employment and Wages (QCEW) program which includes all employers subject to state unemployment insurance laws and federal agencies subject to the Unemployment Compensation for Federal Employees program.
+
+Employment estimates are benchmarked, or ratio adjusted, monthly to the strike-adjusted employment estimates of the Current Employment Statistics (CES) survey. A ratio of CES to JOLTS employment is used to adjust the levels for all other JOLTS data elements.
 
 JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next.
 
