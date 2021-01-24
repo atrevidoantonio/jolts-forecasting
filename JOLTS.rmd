@@ -3,13 +3,18 @@ title: "JOLTS Overview"
 fontfamily: libertine
 fontfamilyoptions: sfdefault
 output: 
-  html_document:
+  pdf_document:
   fig_width: 6
   fig_height: 5
   fig_caption: true
-  extra_dependencies: ["amsmath", "subfig"]
+  extra_dependencies: ["amsmath", "subfig", "relsize", "amsfonts"]
 fontsize: 11pt
 ---
+
+<style>
+body {
+text-align: justify}
+</style>
 
   ```{r include = FALSE}
 library(knitr)
@@ -17,6 +22,7 @@ library(ggplot2)
 library(tinytex)
 library(ggthemes)
 library(extrafont)
+library(boot)
 library(ggthemr)
 library(tidyverse)
 library(dplyr)
@@ -60,9 +66,9 @@ reformat <-
 df <-
   map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL"), fredr) %>%
   reformat()
-  ```
+  ``
+#Introduction
 
-# Introduction
 The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
 
 The JOLTS survey design is a stratified random sample of 20,700 nonfarm business and government 
@@ -84,7 +90,7 @@ including: the failure to include a segment of the population; the inability to 
 
 One of the most striking indicators from today’s report is the job seekers ratio, that is, the ratio of unemployed workers (averaged for mid-November and mid-December) to job openings (at the end of November). On average, there were 10.7 million unemployed workers while there were only 6.5 million job openings. This translates into a job seeker ratio of about 1.6 unemployed workers to every job opening. Another way to think about this: for every 16 workers who were officially counted as unemployed, there were only available jobs for 10 of them.
 
-```{r dpi = 720, fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 600,fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
   df %>%
   ggplot(aes(x = date, y = unemployed/openings)) +
   geom_line(color = prussian) + 
@@ -92,32 +98,51 @@ One of the most striking indicators from today’s report is the job seekers rat
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Job Seekers Ratio \n", x = "", fill = "",
+  labs(y = "Job Seekers Ratio \n", x = "", fill = "", title = "Job Seeker Ratio",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
-```       
-       
-```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```
+
+```{r dpi = 600,fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
   df %>%
-  ggplot(aes(x = date, y = unemployed/(unemployed + employed))) +
-  geom_line(color = prussian) +
-  geom_line(aes(y = openings/(unemployed + employed)), color = raspberry) +
+  ggplot(aes(x = date, y = ((unemployed/openings) - lag((unemployed/openings), n = 12))/lag((unemployed/openings), n = 12))) +
+  geom_line(color = prussian) + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-    plot.title = element_text(size = rel(1.5), hjust = 0.5),
-    plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(label = percent_format(), position = "right") +
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Percent \n", x = "", fill = "",
+  labs(y = "Job Seekers Ratio \n", x = "", fill = "", title = "Job Seeker Ratio",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
-```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+  df %>%
+  mutate(seekers = unemployed/(unemployed + employed),
+         vacany = openings/(unemployed + employed)) %>%
+  gather(measure, value, seekers, vacany) %>%
+  ggplot(aes(x = date, y = value, color = measure)) +
+  geom_line() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+    plot.title = element_text(face = "plain"),
+    plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(label = percent_format(), position = "right") +
+  scale_color_manual("", labels = c("Unemployment rate", "Vacancy rate"), values = c(prussian, raspberry)) +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Percent \n", x = "", fill = "", title = "Unemployment & Vacany Rate",
+       caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
+```
+
+```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
  df %>%
   mutate(Hires = hires/employed,
          Quits = quits/employed,
@@ -129,20 +154,20 @@ One of the most striking indicators from today’s report is the job seekers rat
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
   scale_color_manual("",values = c(prussian, babyblue, raspberry)) +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Percent \n", x = "", fill = "",
-       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+  labs(y = "Percent \n", x = "", fill = "", title = "Hires, Quits, & Layoffs",
+       caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
-```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
  df %>%
-  mutate(Hires = hires - lag(hires, n = 1, fill = NA),
-         Quits = quits - lag(quits, n = 1, fill = NA),
-         Layoffs = layoffs - lag(layoffs, n = 1, fill = NA)) %>%
+  mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 12, fill = NA),
+         Quits = rollmean((quits - lag(quits, n = 12, fill = NA))/lag(quits, n = 12), k = 12, fill = NA),
+         Layoffs = rollmean((layoffs - lag(layoffs, n = 12, fill = NA))/lag(layoffs, n = 12), k = 12, fill = NA)) %>%
   gather(measure, value, Hires, Quits, Layoffs) %>%
   ggplot(aes(x = date, y = value, colour = measure)) +
   geom_line() +
@@ -150,25 +175,239 @@ One of the most striking indicators from today’s report is the job seekers rat
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
   scale_y_continuous(label = percent_format(), position = "right") +
   scale_color_manual("",values = c(prussian, babyblue, raspberry)) +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Percent \n", x = "", fill = "",
-       caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
+  labs(y = "Percent \n", x = "", fill = "", title = "Hires, Quits, & Layoffs (12-month rolling average)",
+       caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
+```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+df %>% 
+  mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 12, fill = NA)) %>%
+  ggplot(aes(x = date, y = Hires)) +
+  geom_line(color = prussian) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_y_continuous(label = percent_format(), position = "right") +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Percent \n", x = "", fill = "", title = "Hiring Rate (12-month rolling average)",
+       caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
+```
 
-# Methods
+## Methods
 
-We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that:  a model. As such, all statistical models are “wrong.” No matter the method used, any model is attempt to reproduce (“model”) the true data generating process of a data series. 
+We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that:  a model. As such, all statistical models are “wrong.” No matter the method used, any model is an attempt to reproduce (“model”) the true data generating process of a data series.
 
-An autoregressive integrated moving average (ARIMA) model is a generalization of an autoregressive moving average (ARMA) model. ARIMA models are applied in some cases where data show evidence of non-stationarity in the sense of mean, where an initial differencing step (corresponding to the "integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function (that is, the trend).
+## Background
 
-When seasonality shows in the time series,  seasonal-differencing can be applied to eliminate the seasonal component. As the ARMA model, according to the Wold's decomposition theorem, is theoretically sufficient to describe a wide-sense stationary time series, we are motivated to make stationary a non-stationary time series, for example, by using differencing, before we can use the ARMA model.
+Time series analysis is the procedure of using known data values to fit a time series with a suitable model and estimation of  the corresponding parameters. It comprises methods that attempt to understand the nature of the time series.
 
-The AR part of ARIMA indicates that the evolving variable of interest is regressed on its own lagged (that is, prior) values. The MA part indicates that the regression error is actually a linear combination of error terms whose values occurred contemporaneously and at various times in the past.The I (for "integrated") indicates that the data values have been replaced with the difference between their values and the previous values (and this differencing process may have been performed more than once). The purpose of each of these features is to make the model fit the data as well as possible.
+A major assumption that often provides relief in modeling efforts is the linearity assumption. A linear
+filter, for example, is a linear operation from one time series $x_{t}$ to another time series $y_{t}$.
 
+\[
+E[y_{t}] = L(x_{t}) = A(L^{i})\epsilon_{t} = \left(\sum\limits_{-\infty}^{\infty} \psi_{i}L^{i}\right)\epsilon_{t} = \mu + \sum\limits_{-\infty}^{\infty}\psi_{i}\epsilon_{t-i},
+\]
 
-$$\sum_{i=1}^n X_i$$
+where $\epsilon \sim \mathcal{N}(0, \sigma^{2})$ and $L^{i}$ is the Lag or Backshift Operator defined as,
+
+\[
+L^{i}x_{t} = x_{t-i} \; \forall \, i \in \mathbb{N}
+\]
+
+the linear filter can be seen as a process that converts the input, $x_{t}$, into an output, $y_{t}$ with a conversion process that involves all (present, past, and future) values of the input in the form of a summation with different "weights", $\psi_{i}$, on each observation $x_{i}$. Specifically, $y_{t}$ can be expressed as
+
+\[
+y_{t} = \mu + \sum\limits_{i= o}^{\infty}\psi_{i}\epsilon_{t-i}
+\]
+
+where the weights are conventionally some form of moving average $M$. A moving average $M$ of span $N$ assigns weights $\frac{1}{N}$ to the most recent observations such that the estimate can be written as
+\[
+M_{t} = \frac{1}{N} \sum\limits_{t = T - N - 1}^{N} y_{t}
+\]
+
+The covariance between $y_{t}$ and its value at another point in time $y_{t + k}$ is called the auto-covariance at lag $k$, and is defined by
+
+\[
+\gamma_{k} = \mathrm{Cov}(y_{t}, y_{t+k}) = E\left[(y_{t} - \mu)(y_{t+k} - \mu)\right]
+\]
+
+the autocovariance of the series at lag $k = 0$ is simply the variance of the time series. The autocorrelation coefficient at $k$ is then
+\begin{gather*}
+\rho_{k} = \frac{E[(y_{t} - \mu)(y_{t+k} - \mu)]}{\sqrt{E[(y_{t} - \mu)^{2}]E[(y_{t+k} - \mu)^{2}]}} \\[8pt]
+= \frac{\mathrm{Cov}(y_{t}, y_{t+k})}{\mathrm{Var}(y_{t})}\\[8pt]
+= \frac{\gamma_{k}}{\gamma_{0}}
+\end{gather*}
+
+The collection of these values $\rho_{k}$ is called the autocorrelation function. For a finite time series, it is necessary to estimate the autocovariance and autocorrelation functions. A usual estimate of the autorcovariance function is
+
+\[
+c_{k} = \hat{\gamma_{k}} = \frac{1}{T} \sum\limits_{t = 1}^{T-k}(y_{t} -\bar{y})(y_{t+k} - \bar{y}), \quad k = 1, 2, 3,\, \ldots,\, K
+\]
+
+and the autocorrelation function is estimated by the sample autocorrelation function (sample ACF)
+
+\[
+r_{k} = \hat{\rho_{k}} = \frac{c_{k}}{c_{o}}
+\]
+
+The stationarity of a time series is related to its statistical properties in time. That is, in the more strict sense, a stationary time series exhibits similar "statistical behavior" in time and this is often characterized as a constant probability distribution in time. However, it is usually satisfactory to consider the first two moments of the time series and define stationarity (or weak stationarity) as follows: (1) the expected value of the time series does not depend on time and (2) the autocovariance function defined as $\mathrm{Cov}(y_{t}, y_{t+k})$ for any lag $k$ is only a function of $k$ and not time: that is, $y(k) = \mathrm{Cov}(y_{t}, y_{t+k})$. Weak stationarity, then, implies that the mean of the series does not change with time $t$ and that the autocovariance function, $\gamma(k, t)$, depends on $k$ and $t$ only
+through their difference $|k - t|$.
+
+For a time-invariant and stable linear filter a stationary input time series $y(t)$ can be written more succinctly as,
+
+\begin{gather*}
+y(t) = \mu + \sum\limits_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
+\mu + \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
+\mu + \Psi(L)\epsilon_{t}
+\end{gather*}
+
+where $\Psi(L)\epsilon_{t} = \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}$.
+
+The infinite moving average model has a covariance function in the form,
+
+\[
+\mathrm{Cov}(y_{t}, y_{t+k}) = \gamma_{y}(k, t) = \sum\limits_{i = -\infty}^{\infty}\sum\limits_{j = - \infty}^{\infty}\psi_{i}\psi_{j}\gamma_{x}(i - j + k)
+\]
+
+The autocovariance function of $y_{t}$ is then,
+
+\begin{gather*}
+\gamma_{y}(k, t) = \sum\limits_{i = o}^{\infty}\sum^{\infty}\limits_{j = 0} \psi_{i}\psi_{j}\gamma_{\epsilon}(i-j+k) \\[8pt]
+= \sigma^{2}\sum\limits_{i = 0}^{\infty}\psi_{i}\psi_{i + k}
+\end{gather*}
+
+This representation comes from a theorem by Wold and which essentially states that any nondeterministic weakly stationary time series $y_{t}$ can be represented as in the above manner. A more intuitive interpretation of this theorem is that a stationary time series can be seen as the weighted sum of the present and past random "disturbances."
+
+Although very powerful in providing a general representation of any stationary time series, the infinite moving average model given in is not very useful in practice except for certain special cases.
+
+In finite order moving average or MA models, weights that are not set to 0 are represented by the Greek letter $\theta$ with a minus sign in front.
+
+\begin{gather*}
+y_{t} = \mu + \left(1 - \sum\limits_{i=1}^{q}\theta_{i}L^{i} \right)\epsilon_{i}\\[8pt]
+= \mu + \Theta(L)\epsilon_{t}
+\end{gather*}
+
+where $\Theta(L)\epsilon_{t} = 1 - \sum\limits_{i=1}^{q}\theta_{i}L^{i}$
+
+An interpretation of the finite order MA processes is that at any given time, of the infinitely many past disturbances, only a finite number of the disturbances "contribute" to the current value of the time series and that the time window of the contributors "moves" in time, making the "oldest" disturbance obsolete for the next observation. It is indeed not too far fetched to think that some processes might have these intrinsic dynamics. However, for some others, we may be required to consider the "lingering" contributions of the disturbances that happened back in the past. This will of course bring us back to square one in terms of our efforts in estimating infinitely many weights. Another solution to this problem is through autoregressive models in which the infinitely many weights are assumed to follow a distinct pattern and can be successfully represented with only a handful of parameters. We shall now consider some special cases of autoregressive processes.
+
+## ARMA
+
+Autoregressive models are based on the idea that current value of the series, $x_{t}$ can be explained as a linear combination of past values, $x_{t-1}, x_{t-2}, \ldots, \, x_{t-p}$, together with some random error $\epsilon$. In other words, a series $x_{t}$ is linearly  dependent upon its past values, the degree to which depends on the lag order $p$.  
+
+Let us first consider again the time series
+
+\begin{gather*}
+y(t) = \mu + \sum\limits_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
+\mu + \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
+\mu + \Psi(L)\epsilon_{t}
+\end{gather*}
+
+One approach to modeling this time series is to assume that the contributions of the disturbances that are way in the past should be small compared to the more recent disturbances that the process has experienced. Since the disturbances are independently and identically distributed random variables, we can simply assume a set of infinitely many weights in descending magnitudes reflecting the diminishing magnitudes of contributions of the disturbances in the past.
+
+A simple and yet intuitive set of such weights can be created following an exponential decay pattern. For that we will set $\psi_{i}  = \phi^{i}$, where $\left|\,\phi\,\right| < 1$ to guarantee the exponential "decay." In this notation, the weights on the disturbances starting from the current disturbance and going back in past will be $1, \phi^{2}, \phi^{3},\, \ldots$
+
+\begin{gather*}
+y_{t} = \mu + \epsilon_{t} + \phi\epsilon_{t-1} + \phi^{2}\epsilon_{t-2} + \cdots\\[8pt]
+= \mu + \sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i}
+\\[8pt]
+\end{gather*}
+
+We also have
+
+\begin{gather*}
+y_{t-1} = \mu + \epsilon_{t-1} + \phi\epsilon_{t-2} + \phi^{2}\epsilon_{t-3} + \cdots \\[8pt]
+= \mu + \phi\left(\sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-1-k} + \epsilon_{t}\right)
+\end{gather*}
+
+combining these two equations together we can represent an AR(1) model as a linear process given by
+
+\begin{gather*}
+\mu + \sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i} = \mu + \phi\left(\sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i} + \epsilon_{t}\right) \\[8pt]
+\mu + \epsilon_{t} + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t-i} + \phi\mu \\[8pt]
+\mu - \phi\mu + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t-i} + \epsilon_{t} \\[8pt]
+\delta + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t- i} + \epsilon_{t}
+\end{gather*}
+
+where $\delta = (1 - \phi)\mu$. A more general way of writing an autoregressive procress is through operator notation as
+
+\begin{gather*}
+\epsilon_{t} = \left(1 - \sum\limits_{i=1}^{i}\phi_{i}L^{i} \right)y_{t} \\[8pt]
+ = \Phi(L)y_{t}
+\end{gather*}
+
+where $\Phi(L) = 1 - \sum\limits_{i=1}^{p}\phi_{i}L^{i}$
+
+The above process in is called a first-order autoregressive process, AR(l), because it can be seen as a regression of $y_{t}$ on $y_{t-1}$ and hence the term autoregressive process.
+
+Autoregressive–moving-average (ARMA) models provide a parsimonious description of a (weakly) stationary stochastic process in terms of two polynomials, one for the autoregression (AR) and the second for the moving average (MA). The general ARMA model was described in the 1951 dissertation of Peter Whittle, Hypothesis Testing in Time Series, which generalized Wold's autoregressive representation theorem for univariate stationary processes to multivariate processes, and was popularized in the 1970 book by George E. P. Box and Gwilym Jenkins Time Series Analysis: Forecasting and Control.
+
+\begin{gather*}
+y_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
+\Psi(L)y_{t} = \delta + \Theta(L)\epsilon_{t}
+\end{gather*}
+which has an infinite moving average process $\mathrm{MA}(q)$
+\[
+y_{t} = \mu + \sum\limits_{i= o}^{\infty}\psi_{i}\epsilon_{t-i}
+\]
+
+## ARIMA
+
+The Autoregressive Integrated Moving Average (ARIMA) model is a generalization of an Autoregressive Moving Average (ARMA) model to overcome the possible violation of the assumption that the series $x_{t}$ is stationary. In order for inferences drawn from the estimates to be reliable when the data are not stationary, the data must be differenced some number of times $d$ to remove seasonality and trend. If a stochastic process has to be differenced $d$ times to reach stationarity, it is said to be integrated of order $d$ or $I(d)$.
+
+A standard convention for expressing the ARIMA model is $\mathrm{ARIMA}(p, d, q)$, where:
+
+* $p$ denotes the number of lag observations included in the model, also called the lag order.
+
+* $d$ denotes the number of times that the series is differenced, also called the degree of differencing.
+
+* $q$ denotes the size of the moving average window.
+
+We will call a time series homogeneous, non-stationary if it is not stationary but its first difference, that is, $w_{t} = y_{t} - Y_{t-1} =(1 - L)y_{t}$,or higher-order differences, $w_{t} =(I- L)^{d}y_{t}$ produce a stationary time series. We will further call $y_{t}$ an autoregressive integrated moving average ($\mathrm{ARIMA}$) process of orders $p$, $d$, and $q$ $\mathrm{ARIMA}(p, d, q)$ if its $d$-th difference, denoted by $w_{t} =(I- L)^{d}y_{t}$ produces a stationary $\mathrm{ARMA}(p, q)$ process. The term integrated is used since, $d = 1$, for example, we can write $y_{t}$ as the sum (or "integral") of the $w_{t}$ process as
+\begin{gather*}
+y_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
+\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)y_{t} = \left(1 +  \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
+\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right) = \left(1 +  \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\left(1 - L\right)^{d} \\[8pt]
+\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)\left(1 - L\right)^{d}y_{t} = \left(1 +  \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
+\Phi(L)(1 - L)^{d}y_{t} = \delta + \Theta(L)\epsilon_{t}
+\end{gather*}
+
+Selection of the hyperparameters $(p, d, q)$ are often chosen through an inspection of the ACF and PACF, but can also be selected through AIC (Akaike Information Criterion), AICc (corrected AIC) and BIC (Bayesian Information Criterion). But note that the selection of the hyperparameters is not unique.
+
+## SVM
+
+## RNN
+
+## Random Forest
+
+## Unit Root
+
+A unit root is a feature of some stochastic processes (such as random walks) that can cause problems in statistical inference involving time series models. A linear stochastic process has a unit root if 1 is a root of the process's characteristic equation. Shocks to a unit root process have permanent effects which do not decay as they would if the process were stationary. The characteristic roots (roots of the characteristic equation) also provide qualitative information about the behavior of the variable whose evolution is described by the dynamic equation. For a differential equation parameterized on time, the variable's evolution is stable if and only if the real part of each root is negative. For difference equations, such as a standard time series, there is stability if and only if the absolute value of each root is less than 1.
+
+An augmented Dickey–Fuller test (ADF) tests the null hypothesis that a unit root is present in a time series sample. The alternative hypothesis is different depending on which version of the test is used, but is usually stationarity or trend-stationarity.
+
+The intuition behind the test is that if the series is characterised by a unit root process then the lagged level of the series ($y_{t-1}$) will provide no relevant information in predicting the change in $y_{t}$ besides the one obtained in the lagged changes. The OLS estimate (based on an $n$-observation time series) of the autocorrelation parameter $\rho$ is given by
+
+\[
+\hat{\rho}(n) = \frac{\sum\limits_{t=1}^{n}y_{t-1}y_{t}}{\sum\limits_{t=1}^{n}y_{t}^{2}}
+ \]
+if $\left|\rho \right| < 1$ then
+
+\[
+\sqrt{n}\left(\hat{\rho} - \rho\right) \implies \sim{N}(0, 1 - \rho^{2})
+\]
+
+To compute the test statistics, we fit the augmented Dickey–Fuller regression
+\[
+\Delta y_{t} = \alpha + \beta y_{t-1} + \delta + \sum\limits_{j=1}^{k}\psi_{i}\Delta y_{t- i} + \epsilon_{t}
+\]
+
+Depending on the specifications, the constant term $\alpha$ or time trend $\delta$ is omitted and $k$ is the number of lags specified.
