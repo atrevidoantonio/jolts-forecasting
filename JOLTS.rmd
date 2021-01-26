@@ -92,7 +92,7 @@ The JOLTS estimates also are affected by nonsampling error. Nonsampling error ca
 
 ## Data
 
-One of the most striking indicators from today's report is the job seekers ratio, that is, the ratio of unemployed workers (averaged for mid-November and mid-December) to job openings (at the end of November). On average, there were 10.7 million unemployed workers while there were only 6.5 million job openings. This translates into a job seeker ratio of about 1.6 unemployed workers to every job opening. Another way to think about this: for every 16 workers who were officially counted as unemployed, there were only available jobs for 10 of them.
+One of the more useful indicators is the job seekers ratio, that is, the ratio of unemployed workers to job openings. On average, there were 10.7 million unemployed workers while there were only 6.5 million job openings. This translates into a job seeker ratio of about 1.6 unemployed workers to every job opening. Another way to think about this: for every 16 workers who were officially counted as unemployed, there were only available jobs for 10 of them.
 
 ```{r dpi = 600,fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
 df %>%
