@@ -63,6 +63,7 @@ def pandas_df_to_r_df(pDF):
     rDF.rownames = robjects.StrVector(pDF.index)
     return rDF
 
+
 class glm(BaseEstimator, RegressorMixin):
     """ This class is a wrapper around the statsmodels GLM class.
         It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
@@ -112,6 +113,74 @@ class glm(BaseEstimator, RegressorMixin):
         
         return (yhat)
 
+class TSLM(BaseEstimator, RegressorMixin):
+    """ This class is a wrapper around the tslm from R.
+        It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
+    """
+    NULL = robjects.NULL
+    #pandas2ri.activate()
+    def __init__(self, seasonal_order = [12], pi_upper=None, level= 5, first_month = None):
+        """
+        Description: Called when initializing the regressor.
+        Params:
+            - pi_upper: upper level of the prediction interval
+            - level: confidence level for prediction interval
+            - first_month: first month of the time series
+        Return: Prediction from TSLM in R
+        """
+        self.seasonal_order = seasonal_order
+        self.level =level
+        self.pi_upper = pi_upper
+        self.first_month = first_month
+
+    def fit(self, X, y=NULL):
+        """
+        Description: fit classifer with response and explanatory variables for TSLM model
+        :param X: X (series, dataframe): series with a date column.
+        :param y: array, the training data.
+        :return: to self-object
+        """ 
+        self.first_month = X[DATE_COL_NAME][0]
+        X = X.drop([DATE_COL_NAME], axis=1, inplace=False)
+        model_input = stats.ts(robjects.FloatVector(y.values), frequency = self.seasonal_order[0])
+
+        if X is not None and not X.empty:
+            X = pandas_df_to_r_df(X.astype('int64'))
+            self.model_fit_ = r_wrapper.fit_tslm_xreg(y = model_input, X = X, FUN = forecast.tslm)
+        else:
+            self.model_fit_ = r_wrapper.fit_tslm(y = model_input, FUN = forecast.tslm)
+        return self
+
+    def predict(self, X, y=None):
+        """
+        Description: Out-of-sample forecasts with forecast_steps
+        :param X: X (series, dataframe): series with a date column.
+        :param y: response variable which is None for this model
+        :return: numpy array, prediction from TSLM in R.
+        """
+        forecast_steps = len(X[DATE_COL_NAME])
+        # Create X_dummy, i.e. the monthly categorical variables as xreg
+        X_dummy = X.drop([DATE_COL_NAME], axis = 1, inplace = False)
+
+        if X_dummy is not None and not X_dummy.empty:
+            X_dummy = pandas_df_to_r_df(X_dummy.astype('int64'))      
+            ret_value = r_wrapper.predict_tslm_xreg(model = self.model_fit_, X = X_dummy, FUN = forecast.forecast, h = forecast_steps, level = self.level)
+        else:
+            ret_value = r_wrapper.predict(model = self.model_fit_, FUN = forecast.forecast, h = forecast_steps, level = self.level)
+        
+        # yhat is fitted.value when doing in-sample fitting and producing performance metrics and
+        # yhat is forecasting.value when predicting forecasts.
+        if self.first_day in list(X[DATE_COL_NAME]):
+            yhat = ret_value[0]
+        else:
+            yhat = ret_value[1]
+
+        self.pi_upper = ret_value[2]
+
+        if yhat is rpy2.rinterface.NULL:
+            yhat = None
+
+        return (yhat)
 class rf(BaseEstimator, RegressorMixin):
     """ This class is a wrapper around the sklearn random forest class.
         It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
@@ -202,6 +271,71 @@ class svr(BaseEstimator, RegressorMixin):
         X = X.drop([DATE_COL_NAME], axis=1, inplace=False)
         yhat = self.fit_.predict(X)
         yhat = [max(0, x) for x in yhat]
+        return (yhat)
+
+class ETS(BaseEstimator, RegressorMixin):
+    """ Exponential Smoothing State Space Model.
+        It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
+    """
+    def __init__(self, opt_crit="mse", ic= "aic", seasonal_order = [12], method = "ets", pi_upper=None, level= 5, first_month = None):
+        """
+        Description: Called when initializing the regressor.
+        Params:
+            - model: Usually a three-character string identifying method Hyndman et al. (2008).
+            For more details, refer to https://www.rdocumentation.org/packages/forecast/versions/8.4/topics/ets
+            - opt_crit: Optimization criterion.
+            - ic: Information criterion to be used in model selection.
+            - pi_upper: upper level of the prediction interval
+            - level: confidence level for prediction interval
+            - first_day: first date of the history data, used to differentiate where X is history data or future data and the 
+            corresponding yhat is the fitted_value or forecasting_value
+        Return: None
+        """
+        
+        self.seasonal_order = seasonal_order
+        self.method = method
+        self.opt_crit = opt_crit
+        self.ic = ic
+        self.level=level
+        self.pi_upper = pi_upper
+        self.first_month = first_month
+
+    def fit(self, X, y= None):
+        """
+        Describe: fit model with response and explanatory variables
+        :param X: X (series, dataframe): series with a date column.
+        :param y: array, the training data.
+        :return: self object.
+        """
+        self.first_day = X[DATE_COL_NAME][0]
+        model_input = stats.ts(robjects.FloatVector(y.values), frequency = self.seasonal_order[0])
+        model_input = stats.ts(model_input, frequency = 12)
+        self.model_fit_ = r_wrapper.fit(y = model_input, FUN = forecast.stlm, method = self.method)
+        
+        return self
+
+    def predict(self, X, y = None):
+        """
+        Description: Exponential Smoothing State Space Model forecasts with forecast_steps
+        :param X: X (series, dataframe): series with a date column.
+        :param y: response variable which is None for this model
+        :return: numpy array, prediction from Exponential Smoothing State Space Model in R.
+        """
+        forecast_steps = len(X[DATE_COL_NAME])
+        ret_value = r_wrapper.predict(model = self.model_fit_, FUN = forecast.forecast, h = forecast_steps, level = self.level)
+        
+        # yhat is fitted.value when doing in-sample fitting and producing performance metrics and
+        # yhat is forecasting.value when predicting forecasts.
+        if self.first_month in list(X[DATE_COL_NAME]):
+            yhat = ret_value[0]
+        else:
+            yhat = ret_value[1]
+
+        self.pi_upper = ret_value[2]
+
+        if yhat is rpy2.rinterface.NULL:
+            yhat = None
+
         return (yhat)
 
 class AutoArima(BaseEstimator, RegressorMixin):
@@ -315,7 +449,7 @@ class AutoArima(BaseEstimator, RegressorMixin):
         return (yhat)
 
 class StlArima(BaseEstimator, RegressorMixin):
-    """ This class is a wrapper around the auto.arima from R.
+    """ This class is a wrapper around the auto.arima in R.
         Returns best ARIMA model according to either AIC, AICc or BIC value.
         It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
     """
@@ -403,97 +537,6 @@ class StlArima(BaseEstimator, RegressorMixin):
             the best parameters and scores is not required.
         """
         raise NotImplementedError
-
-class ETS(BaseEstimator, RegressorMixin):
-    """ This is a class wrapped Exponential Smoothing State Space Model.
-        It inherits from sklearn BaseEstimator so that it can work with sklearn Pipelines.
-    """
-    def __init__(self, opt_crit="mse", ic= "aic", seasonal_order = [12], method = "ets", pi_upper=None, level= 5, first_month = None):
-        """
-        Description: Called when initializing the regressor.
-        Params:
-            - model: Usually a three-character string identifying method 
-            using the framework terminology of Hyndman et al. (2002) and Hyndman et al. (2008).
-            For more details, refer to https://www.rdocumentation.org/packages/forecast/versions/8.4/topics/ets
-            - opt_crit: Optimization criterion.
-            - ic: Information criterion to be used in model selection.
-            - pi_upper: upper level of the prediction interval
-            - level: confidence level for prediction interval
-            - first_month: first date of the history data, used to differentiate where X is history data or future data and the 
-            corresponding yhat is the fitted_value or forecasting_value
-        Return: None
-        """
-        
-        self.seasonal_order = seasonal_order
-        self.method = method
-        self.opt_crit = opt_crit
-        self.ic = ic
-        self.level=level
-        self.pi_upper = pi_upper
-        self.first_month = first_month
-
-    def fit(self, X, y= None):
-        """
-        Describe: fit classifer with response and explanatory variables
-        :param X: X (series, dataframe): series with a date column.
-        :param y: array, the training data.
-        :return: self object.
-        """
-        self.first_month = X[DATE_COL_NAME][0]
-        model_input = stats.ts(robjects.FloatVector(y.values), frequency = self.seasonal_order[0])
-
-        if len(y.values) <= self.seasonal_order[0]* 52*2:
-            """ 
-            For low volume and small sample data, use model = "AZZ" 
-            to avoid Multiplicative Error, exploding forecasts, and large prediction intervals
-            """
-            self.model_fit_ =r_wrapper.fit(y = model_input,
-                                                FUN = forecast.ets,
-                                                model = "AZZ",
-                                                opt_crit = self.opt_crit,
-                                                ic = self.ic, damped = True)
-        else:
-          
-            if self.seasonal_order[0] > 1:
-                seasonal_period = robjects.IntVector([self.seasonal_order[0], self.seasonal_order[0]*52 ] )
-                model_input = forecast.msts(model_input, seasonal_period)
-                self.model_fit_ = r_wrapper.fit(y = model_input, 
-                                                    FUN = forecast.stlm,
-                                                    method = self.method
-                                                    )
-            else:
-                model_input = stats.ts(model_input, frequency = 52)
-                self.model_fit_ = r_wrapper.fit(y= model_input, 
-                                                    FUN = forecast.stlm,
-                                                    method = self.method
-                                                    )
-
-        return self
-
-    def predict(self, X, y = None):
-        """
-        Description: Exponential Smoothing State Space Model forecasts with forecast_steps
-        :param X: X (series, dataframe): series with a date column.
-        :param y: response variable which is None for this model
-        :return: numpy array, prediction from Exponential Smoothing State Space Model in R.
-        """
-        forecast_steps = len(X[DATE_COL_NAME])
-        ret_value = r_wrapper.predict(model = self.model_fit_, FUN = forecast.forecast, h = forecast_steps, level = self.level)
-        
-        # yhat is fitted.value when doing in-sample fitting and producing performance metrics and
-        # yhat is forecasting.value when predicting forecasts.
-        if self.first_month in list(X[DATE_COL_NAME]):
-            yhat = ret_value[0]
-        else:
-            yhat = ret_value[1]
-
-        self.pi_upper = ret_value[2]
-
-        if yhat is rpy2.rinterface.NULL:
-            yhat = None
-
-        return (yhat)
-
 class DLM(BaseEstimator, RegressorMixin):
     """ This Dynamic Linear Model (DLM) class is a wrapper around dlm from R.
         For more details, see https://cran.r-project.org/web/packages/dlm/dlm.pdf

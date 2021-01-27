@@ -43,7 +43,61 @@ predict <- function(model, FUN, ...) {
 	return(list(pred$fitted, pred$mean, c(pred$upper)))
 }
 
-### special fit() and predict() for SARIMAX
+
+# fit() and predict() for tslm model, follows 'y ~ trend + season' format when fitting the model
+fit_tslm_xreg <- function(y, X, FUN, ...) {
+  arguments <- list(...)
+  names(arguments) <- gsub("_", ".", names(arguments))
+  tslm_xreg <<- X
+
+  if (frequency(y)==1){ #Daily training open one day a week, no daily seasonality
+    arguments <- c(list(y ~ trend  + as.matrix(tslm_xreg) ), arguments)
+  } else {
+    arguments <- c(list(y ~ trend + season + as.matrix(tslm_xreg) ), arguments)
+  }
+  model.fit <- tryCatch({
+    do.call(FUN, arguments, quote = TRUE)
+  }, error = function(err) {
+    stop(err)
+  })
+  
+  return(model.fit)
+}
+
+fit_tslm <- function(y, FUN, ...) {
+# For MUID has less than 1yr of data
+  arguments <- list(...)
+  names(arguments) <- gsub("_", ".", names(arguments))
+  
+  if ( frequency(y) == 1 | length(y) < 12*2 ){  # Monthly training less than 2 yrs 
+    arguments <- c(list(y ~ trend), arguments) # no seasonality
+  } else {
+    arguments <- c(list(y ~ trend + season), arguments)
+  }
+  model.fit <- tryCatch({ do.call(FUN, arguments, quote = TRUE) }, 
+                          error = function(err) { stop(err) })
+  
+  return(model.fit)
+}
+
+
+predict_tslm_xreg <- function(model, X, FUN, ...) { 
+  arguments <- list(...)
+  names(arguments) <- gsub("_", ".", names(arguments))
+  tslm_xreg <<- X
+  arguments <- c(list(object = model, xreg = as.matrix(tslm_xreg) ), arguments)
+
+  pred <- tryCatch ({
+    do.call(FUN, arguments, quote = TRUE)
+  }, error = function(err) {
+    print("Encountered Error in model prediction")
+    stop()
+  })
+  
+  return(list(pred$fitted, pred$mean, c(pred$upper)))
+}
+
+## special fit() and predict() for ARIMA
 
 fit_autoarima <- function(y, FUN, xreg, ...) { 
     arguments <- list(...)

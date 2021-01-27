@@ -76,7 +76,7 @@ map_dfr(c( "PAYEMS", "UNEMPLOY", "JTSHIL", "JTSTSL", "JTSJOL", "JTSQUL", "JTSLDL
 reformat()
 ```
 
-# Introduction
+## Introduction
 
 The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
 
@@ -231,7 +231,7 @@ $$
 y_{t} = \mu + \sum\limits_{i= o}^{\infty}\psi_{i}\epsilon_{t-i}
 $$
 
-where the weights are conventionally some form of moving average $M$. A moving average $M$ of span $N$ assigns weights $\frac{1}{N}$ to the most recent observations such that the estimate can be written as 
+where the weights are conventionally some form of moving average $M$. A moving average $M$ of span $N$ assigns weights $\frac{1}{N}$ to the most recent observations such that the estimate can be written as
 
 $$
 M_{t} = \frac{1}{N} \sum\limits_{t = T - N - 1}^{N} y_{t}
@@ -265,19 +265,21 @@ $$
 r_{k} = \hat{\rho_{k}} = \frac{c_{k}}{c_{o}}
 $$
 
-The stationarity of a time series is related to its statistical properties in time. That is, in the more strict sense, a stationary time series exhibits similar "statistical behavior" in time and this is often characterized as a constant probability distribution in time. However, it is usually satisfactory to consider the first two moments of the time series and define stationarity (or weak stationarity) as follows: (1) the expected value of the time series does not depend on time and (2) the autocovariance function defined as $\mathrm{Cov}(y\_{t}, y\_{t+k})$ for any lag $k$ is only a function of $k$ and not time: that is, $y(k) = \mathrm{Cov}(y\_{t}, y\_{t+k})$. Weak stationarity, then, implies that the mean of the series does not change with time $t$ and that the autocovariance function, $\gamma(k, t)$, depends on $k$ and $t$ only through their difference $\|k - t\|$.
+The stationarity of a time series is related to its statistical properties in time. That is, in the more strict sense, a stationary time series exhibits similar "statistical behavior" in time and this is often characterized as a constant probability distribution in time. However, it is usually satisfactory to consider the first two moments of the time series and define stationarity (or weak stationarity) as follows: (1) the expected value of the time series does not depend on time and (2) the autocovariance function defined as $\mathrm{Cov}(y\_{t}, y\_{t+k})$ for any lag $k$ is only a function of $k$ and not time: that is, $y(k) = \mathrm{Cov}(y\_{t}, y\_{t+k})$. Weak stationarity, then, implies that the mean of the series does not change with time $t$ and that the autocovariance function, $\gamma(k, t)$, depends on $k$ and $t$ only through their difference $k - t$.
 
-For a time-invariant and stable linear filter a stationary input time series \$y(t)\$ can be written more succinctly as,
+For a time-invariant and stable linear filter a stationary input time series $y(t)$ can be written more succinctly as,
 
 $$
 \begin{gather*}
-y(t) = \mu + \sum\limits\_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
-\mu + \sum\limits\_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
+y(t) = \mu + \sum\limits_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
+\mu + \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
 \mu + \Psi(L)\epsilon_{t}
 \end{gather*}
 $$
-  where $\Psi(L)\epsilon_{t} = \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}$.
-    
+  where
+  $$
+  $\Psi(L)\epsilon_{t} = \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}$
+  $$  
 The infinite moving average model has a covariance function in the form,
 $$
 \mathrm{Cov}(y_{t}, y_{t+k}) = \gamma_{y}(k, t) = \sum\limits_{i = -\infty}^{\infty}\sum\limits_{j = - \infty}^{\infty}\psi_{i}\psi_{j}\gamma_{x}(i - j + k)
@@ -372,9 +374,9 @@ Autoregressive--moving-average (ARMA) models provide a parsimonious description 
 
 $$
 \begin{gather*}
-y\_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt] 
+y\_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
 \Psi(L)y\_{t} = \delta + \Theta(L)\epsilon_{t} 
-\end{gather*} 
+\end{gather*}
 $$
 
 which has an infinite moving average process $\mathrm{MA}(q)$ 
@@ -389,21 +391,21 @@ The Autoregressive Integrated Moving Average (ARIMA) model is a generalization o
 
 A standard convention for expressing the ARIMA model is $\mathrm{ARIMA}(p, d, q)$, where:
 
--   $p$ denotes the number of lag observations included in the model, also called the lag order.
+-$p$ denotes the number of lag observations included in the model, also called the lag order.
 
--   $d$ denotes the number of times that the series is differenced, also called the degree of differencing.
+-$d$ denotes the number of times that the series is differenced, also called the degree of differencing.
 
--   $q$ denotes the size of the moving average window.
+-$q$ denotes the size of the moving average window.
 
-We will call a time series homogeneous, non-stationary if it is not stationary but its first difference, that is, $w_{t} = y_{t} - Y_{t-1} =(1 - L)y_{t}$,or higher-order differences, $w_{t} =(I- L)^{d}y_{t}$ produce a stationary time series. We will further call $y_{t}$ an autoregressive integrated moving average ($\mathrm{ARIMA}$) process of orders $p$, $d$, and $q$ $\mathrm{ARIMA}(p, d, q)$ if its $d$-th difference, denoted by $w_{t} =(I- L)^{d}y_{t}$ produces a stationary $\mathrm{ARMA}(p, q)$ process. The term integrated is used since, $d = 1$, for example, we can write $y_{t}$ as the sum (or "integral") of the $w_{t}$ process as 
+We will call a time series homogeneous, non-stationary if it is not stationary but its first difference, that is, $w_{t} = y_{t} - Y_{t-1} =(1 - L)y_{t}$,or higher-order differences, $w_{t} =(I- L)^{d}y_{t}$ produce a stationary time series. We will further call $y_{t}$ an autoregressive integrated moving average ($\mathrm{ARIMA}$) process of orders $p$, $d$, and $q$ $\mathrm{ARIMA}(p, d, q)$ if its $d$-th difference, denoted by $w_{t} =(I- L)^{d}y_{t}$ produces a stationary $\mathrm{ARMA}(p, q)$ process. The term integrated is used since, $d = 1$, for example, we can write $y_{t}$ as the sum (or "integral") of the $w_{t}$ process as
 
 $$
-\begin{gather*} 
+\begin{gather*}
 y\_{t} = \delta + \sum\limits\_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon\_{t} \\[8pt]
-\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right) = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\left(1 - L\right)^{d} \\[8pt] 
+\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right) = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\left(1 - L\right)^{d} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)\left(1 - L\right)^{d}y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
-\Phi(L)(1 - L)^{d}y_{t} = \delta + \Theta(L)\epsilon_{t} 
+\Phi(L)(1 - L)^{d}y_{t} = \delta + \Theta(L)\epsilon_{t}
 \end{gather*}
 $$
 
@@ -433,7 +435,7 @@ $$
 \sqrt{n}\left(\hat{\rho} - \rho\right) \implies \sim{N}(0, 1 - \rho^{2})
 $$
 
-To compute the test statistics, we fit the augmented Dickey--Fuller regression 
+To compute the test statistics, we fit the augmented Dickey--Fuller regression
 $$
 \Delta y_{t} = \alpha + \beta y_{t-1} + \delta + \sum\limits_{j=1}^{k}\psi_{i}\Delta y_{t- i} + \epsilon_{t}
 $$
