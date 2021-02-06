@@ -1,0 +1,48 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{nimbusserif}
+\usepackage[scaled]{urial}
+\usepackage[a4paper, width=135mm, top=10mm, bottom=10mm]{geometry}
+\usepackage{graphicx}
+
+\newcommand{\source}[1]{\footnotesize\caption*{\textbf{Source}: {#1}} } %
+\usepackage[dvipsnames]{xcolor}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{threeparttable}
+\usepackage{authblk}
+\usepackage{subcaption}
+
+\usepackage{textpos}
+\usepackage{ragged2e}
+\usepackage{relsize}
+\usepackage{setspace}
+
+\newlength{\templength}
+\newlength{\textparindent}
+\setlength{\textparindent}{\parindent}
+\makeatletter
+\let \@makefntextorig \@makefntext
+% Saving the original definition so we can reuse it if necessary.
+\newcommand{\@makefntextcustom}[1]{%
+	\parindent \textparindent%
+	\hspace{-\textparindent}\hspace{-100pt}\makebox[100pt][r]{\thefootnote.\enskip}%
+	#1%
+}
+
+\renewcommand{\@makefntext}[1]{\@makefntextcustom{#1}}
+\makeatother
+
+\usepackage[colorlinks]{hyperref}
+\hypersetup{
+	linkcolor=blue,
+	citecolor=blue,
+	urlcolor=blue
+}
+
+\clubpenalty=100000
+\widowpenalty=100000
+\singlespacing
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}

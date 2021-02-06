@@ -31,10 +31,9 @@ forecast = importr("forecast")
 stats = importr("stats")
 dlm = importr("dlm")
 
-# STAP translates the signatures of the R functions to have valid parameter
-# names. The contents of the r_wrapper.R script is then 
-# translated and stored as an object with the variable name "r_wrapper".
-# Get relative path of wrappedclasses
+# STAP translates the signatures of the R functions in r_wrapper.R script 
+# And stores it as an object with the variable name "r_wrapper".
+
 dirname = os.path.dirname(__file__)
 with open(os.path.join(dirname, "R_wrapper.R"), 'r') as f:
     model_string = f.read()

@@ -1,28 +1,31 @@
 ---
 title: "JOLTS Overview"
-fontfamily: libertine
-fontfamilyoptions: sfdefault
+fontfamily: nimbusserif
 output:
-  html_document:
+  pdf_document:
+    keep_tex: true
+    latex_engine: pdflatex
+    citation_package: natbib
     df_print: paged
   fig_width: 6
   fig_height: 5
   fig_caption: yes
   extra_dependencies:
   - amsmath
-  - subfig
-  - relsize
   - amsfonts
-  pdf_document: null
+  - mathtools
+  - geometry
+  includes: 
+    in_header: "preamble.tex"
+bibliography: references.bib
+biblio-style: aea
 fontsize: 11pt
+urlcolor: blue
+linkcolor: blue
+geometry: width = 135mm, top = 10mm, bottom = 20mm
+
 ---
 
-```{html include = FALSE}
-<style>
-body {
-text-align: justify}
-</style>
-```
 
 ```{r include = FALSE}
 library(knitr)
@@ -84,11 +87,11 @@ The JOLTS survey design is a stratified random sample of 20,700 nonfarm business
 
 Employment estimates are benchmarked, or ratio adjusted, monthly to the strike-adjusted employment estimates of the Current Employment Statistics (CES) survey. A ratio of CES to JOLTS employment is used to adjust the levels for all other JOLTS data elements.
 
-JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next.
+JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next. 
 
-JOLTS estimates are subject to both sampling and nonsampling error. Nonsampling error occurs when a sample is surveyed rather than the entire population. There is a chance that the sample estimates may differ from the true population values they represent. The difference, or sampling error, varies depending on the particular sample selected. This variability is measured by the standard error of the estimate. BLS analysis is generally conducted at the 90-percent level of confidence. That means that there is a 90-percent chance, or level of confidence, that an estimate based on a sample will differ by no more than 1.6 standard errors from the true population value because of sampling error. Sampling error estimates are available at www.bls.gov/jlt/jolts_median_standard_errors.htm.
+The JOLTS estimates also are affected by nonsampling error. Nonsampling error can occur for many reasons including: the failure to include a segment of the population; the inability to obtain data from all units in the sample; the inability or unwillingness of respondents to provide data on a timely basis; mistakes made by respondents; errors made in the collection or processing of the data; and errors from the employment benchmark data used in estimation.^[Nonsampling error occurs when a sample is surveyed rather than the entire population. Which means that there is a chance that the sample estimates may differ from the true population values they represent. The difference, or sampling error, varies depending on the particular sample selected. This variability is measured by the standard error of the estimate. BLS analysis is generally conducted at the 90-percent level of confidence. That means that there is a 90-percent chance, or level of confidence, that an estimate based on a sample will differ by no more than 1.6 standard errors from the true population value because of sampling error. Sampling error estimates are available at the BLS' [website](https://www.bls.gov/jlt/jolts_median_standard_errors.htm)]
 
-The JOLTS estimates also are affected by nonsampling error. Nonsampling error can occur for many reasons including: the failure to include a segment of the population; the inability to obtain data from all units in the sample; the inability or unwillingness of respondents to provide data on a timely basis; mistakes made by respondents; errors made in the collection or processing of the data; and errors from the employment benchmark data used in estimation.
+
 
 ## Data
 
@@ -120,9 +123,9 @@ labs(y = "Job Seekers Ratio \n", x = "", fill = "", title = "Job Seeker Ratio",
         legend.title = element_text(size = 10),
         plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(position = "right") +
+  scale_y_continuous(labels = percent_format(), position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Job Seekers Ratio \n", x = "", fill = "", title = "Job Seeker Ratio",
+  labs(y = "Job Seekers Ratio (Change from year ago) \n", x = "", fill = "", title = "Job Seeker Ratio",
        caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
 
@@ -210,6 +213,7 @@ df %>%
 We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that: a model. As such, all statistical models are "wrong." No matter the method used, any model is an attempt to reproduce ("model") the true data generating process of a data series.
 
 ## Background
+For many familiar with the methodology of time series forecasting, this section presents a brief recapitulation of basic concepts which can be found in any standard textbook such as \cite{MJK}. 
 
 Time series analysis is the procedure of using known data values to fit a time series with a suitable model and estimation of the corresponding parameters. It comprises methods that attempt to understand the nature of the time series.
 
@@ -245,54 +249,51 @@ $$
 
 the autocovariance of the series at lag $k = 0$ is simply the variance of the time series. The autocorrelation coefficient at $k$ is then 
 
-$$
+
 \begin{gather*}
 \rho_{k} = \frac{E[(y_{t} - \mu)(y_{t+k} -\mu)]}{\sqrt{E[(y_{t} - \mu)^{2}]E[(y_{t+k} - \mu)^{2}]}} \\[8pt]
 = \frac{\mathrm{Cov}(y_{t}, y_{t+k})}{\mathrm{Var}(y_{t})}\\[8pt]
 = \frac{\gamma_{k}}{\gamma_{0}}
 \end{gather*}
-$$
 
 The collection of these values $\rho_{k}$ is called the autocorrelation function. For a finite time series, it is necessary to estimate the autocovariance and autocorrelation functions. A usual estimate of the autorcovariance function is
 
 $$
 c_{k} = \hat{\gamma_{k}} = \frac{1}{T} \sum\limits_{t = 1}^{T-k}(y_{t} -\bar{y})(y_{t+k} - \bar{y}), \quad k = 1, 2, 3,\, \ldots,\, K
 $$
-
 and the autocorrelation function is estimated by the sample autocorrelation function (sample ACF)
-
 $$
 r_{k} = \hat{\rho_{k}} = \frac{c_{k}}{c_{o}}
 $$
-
-The stationarity of a time series is related to its statistical properties in time. That is, in the more strict sense, a stationary time series exhibits similar "statistical behavior" in time and this is often characterized as a constant probability distribution in time. However, it is usually satisfactory to consider the first two moments of the time series and define stationarity (or weak stationarity) as follows: (1) the expected value of the time series does not depend on time and (2) the autocovariance function defined as $\mathrm{Cov}(y\_{t}, y\_{t+k})$ for any lag $k$ is only a function of $k$ and not time: that is, $y(k) = \mathrm{Cov}(y\_{t}, y\_{t+k})$. Weak stationarity, then, implies that the mean of the series does not change with time $t$ and that the autocovariance function, $\gamma(k, t)$, depends on $k$ and $t$ only through their difference $k - t$.
+The stationarity of a time series is related to its statistical properties in time. That is, in the more strict sense, a stationary time series exhibits similar "statistical behavior" in time and this is often characterized as a constant probability distribution in time. However, it is usually satisfactory to consider the first two moments of the time series and define stationarity (or weak stationarity) as follows: (1) the expected value of the time series does not depend on time and (2) the autocovariance function defined as $\mathrm{Cov}(y_{t}, y_{t+k})$ for any lag $k$ is only a function of $k$ and not time: that is, $y(k) = \mathrm{Cov}(y_{t}, y_{t+k})$. Weak stationarity, then, implies that the mean of the series does not change with time $t$ and that the autocovariance function, $\gamma(k, t)$, depends on $k$ and $t$ only through their difference $k - t$.
 
 For a time-invariant and stable linear filter a stationary input time series $y(t)$ can be written more succinctly as,
 
-$$
+
 \begin{gather*}
 y(t) = \mu + \sum\limits_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
 \mu + \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
 \mu + \Psi(L)\epsilon_{t}
 \end{gather*}
-$$
-  where
+
+where
   $$
-  $\Psi(L)\epsilon_{t} = \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}$
+  \Psi(L)\epsilon_{t} = \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}
   $$  
 The infinite moving average model has a covariance function in the form,
+
 $$
 \mathrm{Cov}(y_{t}, y_{t+k}) = \gamma_{y}(k, t) = \sum\limits_{i = -\infty}^{\infty}\sum\limits_{j = - \infty}^{\infty}\psi_{i}\psi_{j}\gamma_{x}(i - j + k)
 $$
 
 The autocovariance function of $y_{t}$ is then,
 
-$$
+
 \begin{gather*}
 \gamma_{y}(k, t) = \sum\limits_{i = o}^{\infty}\sum^{\infty}\limits_{j = 0} \psi_{i}\psi_{j}\gamma_{\epsilon}(i-j+k) \\[8pt]
 = \sigma^{2}\sum\limits_{i = 0}^{\infty}\psi_{i}\psi_{i + k}
 \end{gather*}
-$$
+
 
 This representation comes from a theorem by Wold and which essentially states that any nondeterministic weakly stationary time series $y_{t}$ can be represented as in the above manner. A more intuitive interpretation of this theorem is that a stationary time series can be seen as the weighted sum of the present and past random "disturbances."
 
@@ -300,12 +301,12 @@ Although very powerful in providing a general representation of any stationary t
 
 In finite order moving average or MA models, weights that are not set to 0 are represented by the Greek letter $\theta$ with a minus sign in front.
 
-$$
+
 \begin{gather*}
 y_{t} = \mu + \left(1 - \sum\limits_{i=1}^{q}\theta_{i}L^{i} \right)\epsilon_{i}\\[8pt]
 = \mu + \Theta(L)\epsilon_{t}
 \end{gather*}
-$$
+
 
 where $\Theta(L)\epsilon_{t} = 1 - \sum\limits_{i=1}^{q}\theta_{i}L^{i}$
 
@@ -317,54 +318,55 @@ Autoregressive models are based on the idea that current value of the series, $x
 
 Let us first consider again the time series
 
-$$
+
 \begin{gather*}
 y(t) = \mu + \sum\limits_{i= 0}^{\infty}\psi_{i}\epsilon_{t} \\[8pt]
 \mu + \sum\limits_{i=0}^{\infty}\psi_{i}L^{i}\epsilon_{t} \\[8pt]
 \mu + \Psi(L)\epsilon_{t}
 \end{gather*}
-$$
+
 
 One approach to modeling this time series is to assume that the contributions of the disturbances that are way in the past should be small compared to the more recent disturbances that the process has experienced. Since the disturbances are independently and identically distributed random variables, we can simply assume a set of infinitely many weights in descending magnitudes reflecting the diminishing magnitudes of contributions of the disturbances in the past.
 
 A simple and yet intuitive set of such weights can be created following an exponential decay pattern. For that we will set $\psi_{i} = \phi^{i}$, where $\left|\,\phi\,\right| < 1$ to guarantee the exponential "decay." In this notation, the weights on the disturbances starting from the current disturbance and going back in past will be $1, \phi^{2}, \phi^{3},\, \ldots$
 
-$$
+
 \begin{gather*}
 y_{t} = \mu + \epsilon_{t} + \phi\epsilon_{t-1} + \phi^{2}\epsilon_{t-2} + \cdots\\[8pt]
 = \mu + \sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i}
 \\[8pt]
 \end{gather*}
-$$
+
 
 We also have
 
-$$
+
 \begin{gather*}
 y_{t-1} = \mu + \epsilon_{t-1} + \phi\epsilon_{t-2} + \phi^{2}\epsilon_{t-3} + \cdots \\[8pt]
 = \mu + \phi\left(\sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-1-k} + \epsilon_{t}\right)
 \end{gather*}
-$$
+
 
 combining these two equations together we can represent an AR(1) model as a linear process given by
 
-$$
+
 \begin{gather*}
 \mu + \sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i} = \mu + \phi\left(\sum\limits_{i=0}^{\infty}\phi^{i}\epsilon_{t-i} + \epsilon_{t}\right) \\[8pt]
 \mu + \epsilon_{t} + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t-i} + \phi\mu \\[8pt]
 \mu - \phi\mu + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t-i} + \epsilon_{t} \\[8pt]
 \delta + \sum\limits_{i=0}^{\infty}\phi^{i}y_{t- i} + \epsilon_{t}
 \end{gather*}
-$$
+
 
 where $\delta = (1 - \phi)\mu$. A more general way of writing an autoregressive procress is through operator notation as
 
-$$
+
 \begin{gather*}
 \epsilon_{t} = \left(1 - \sum\limits_{i=1}^{i}\phi_{i}L^{i} \right)y_{t} \\[8pt]
  = \Phi(L)y_{t}
 \end{gather*}
-$$
+
+
 where 
 $\Phi(L) = 1 - \sum\limits_{i=1}^{p}\phi_{i}L^{i}$
 
@@ -372,12 +374,10 @@ The above process in is called a first-order autoregressive process, AR(l), beca
 
 Autoregressive--moving-average (ARMA) models provide a parsimonious description of a (weakly) stationary stochastic process in terms of two polynomials, one for the autoregression (AR) and the second for the moving average (MA). The general ARMA model was described in the 1951 dissertation of Peter Whittle, Hypothesis Testing in Time Series, which generalized Wold's autoregressive representation theorem for univariate stationary processes to multivariate processes, and was popularized in the 1970 book by George E. P. Box and Gwilym Jenkins Time Series Analysis: Forecasting and Control.
 
-$$
 \begin{gather*}
-y\_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
-\Psi(L)y\_{t} = \delta + \Theta(L)\epsilon_{t} 
+y_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
+\Psi(L)y_{t} = \delta + \Theta(L)\epsilon_{t} 
 \end{gather*}
-$$
 
 which has an infinite moving average process $\mathrm{MA}(q)$ 
 
@@ -391,23 +391,23 @@ The Autoregressive Integrated Moving Average (ARIMA) model is a generalization o
 
 A standard convention for expressing the ARIMA model is $\mathrm{ARIMA}(p, d, q)$, where:
 
--$p$ denotes the number of lag observations included in the model, also called the lag order.
+* $p$ denotes the number of lag observations included in the model, also called the lag order.
 
--$d$ denotes the number of times that the series is differenced, also called the degree of differencing.
+* $d$ denotes the number of times that the series is differenced, also called the degree of differencing.
 
--$q$ denotes the size of the moving average window.
+* $q$ denotes the size of the moving average window.
 
 We will call a time series homogeneous, non-stationary if it is not stationary but its first difference, that is, $w_{t} = y_{t} - Y_{t-1} =(1 - L)y_{t}$,or higher-order differences, $w_{t} =(I- L)^{d}y_{t}$ produce a stationary time series. We will further call $y_{t}$ an autoregressive integrated moving average ($\mathrm{ARIMA}$) process of orders $p$, $d$, and $q$ $\mathrm{ARIMA}(p, d, q)$ if its $d$-th difference, denoted by $w_{t} =(I- L)^{d}y_{t}$ produces a stationary $\mathrm{ARMA}(p, q)$ process. The term integrated is used since, $d = 1$, for example, we can write $y_{t}$ as the sum (or "integral") of the $w_{t}$ process as
 
-$$
+
 \begin{gather*}
-y\_{t} = \delta + \sum\limits\_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
-\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon\_{t} \\[8pt]
+y\_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
+\left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right) = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\left(1 - L\right)^{d} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)\left(1 - L\right)^{d}y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
 \Phi(L)(1 - L)^{d}y_{t} = \delta + \Theta(L)\epsilon_{t}
 \end{gather*}
-$$
+
 
 Selection of the hyperparameters $(p, d, q)$ are often chosen through an inspection of the ACF and PACF, but can also be selected through AIC (Akaike Information Criterion), AICc (corrected AIC) and BIC (Bayesian Information Criterion). But note that the selection of the hyperparameters is not unique.
 
