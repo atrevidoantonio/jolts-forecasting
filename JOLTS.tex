@@ -166,7 +166,9 @@ reproduce (``model'') the true data generating process of a data series.
 
 For many familiar with the methodology of time series forecasting, this
 section presents a brief recapitulation of basic concepts which can be
-found in any standard textbook such as \cite{MJK}.
+found in any standard textbook such as \cite{MJK} or \cite{brockwell02}.
+For a more advanced treatment, one should see \cite{hamilton94} or
+\cite{brockwell06}.
 
 Time series analysis is the procedure of using known data values to fit
 a time series with a suitable model and estimation of the corresponding
@@ -390,8 +392,7 @@ moving average (MA). The general ARMA model was described in the 1951
 dissertation of Peter Whittle, Hypothesis Testing in Time Series, which
 generalized Wold's autoregressive representation theorem for univariate
 stationary processes to multivariate processes, and was popularized in
-the 1970 book by George E. P. Box and Gwilym Jenkins Time Series
-Analysis: Forecasting and Control.
+by Box and Jenkins in their classic book \cite{box70}.
 
 \begin{gather*}
 y_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
@@ -444,7 +445,7 @@ can write \(y_{t}\) as the sum (or ``integral'') of the \(w_{t}\)
 process as
 
 \begin{gather*}
-y\_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
+y_{t} = \delta + \sum\limits_{i=0}^{p}\phi^{i}y_{t- i} + \epsilon_{t} - \sum\limits_{i=1}^{q}\theta_{i}\epsilon_{i-1} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right) = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\left(1 - L\right)^{d} \\[8pt]
 \left(1 - \sum\limits_{i=0}^{p}\phi^{i}L^{i}\right)\left(1 - L\right)^{d}y_{t} = \left(1 + \sum\limits_{i=1}^{q}\theta_{i}L^{i}\right)\epsilon_{t} \\[8pt]
