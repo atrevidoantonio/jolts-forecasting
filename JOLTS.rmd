@@ -7,7 +7,7 @@ output:
     latex_engine: pdflatex
     citation_package: natbib
     df_print: paged
-  fig_width: 6
+  fig_width: 6.5
   fig_height: 5
   fig_caption: yes
   extra_dependencies:
@@ -90,12 +90,13 @@ data <-
          long.term = UEMP27OV,
          unemployed = UNEMPLOY) %>%
   mutate(date = ymd(date),
-         job.finding = exp(short.term/unemployed) - 1) %>%
-  filter(date >= "1990-01-01") %>%
+        f = 1 - ((unemployed - short.term)/lag(unemployed, n = 1))) %>%
+  filter(date >= "1960-01-01") %>%
   relocate(date)
 
 jfr <- read_csv("data/hazard-rates.csv") %>%
-  mutate(date = mdy(date)) %>%
+  mutate(date = mdy(date),
+         ue.haz = ue.haz/100) %>%
   select(date, ue.haz) %>%
   rename(jfr = ue.haz)
 
@@ -104,7 +105,7 @@ mydf <-
   pivot_wider(names_from = series_id, values_from = value) %>%
   rename(empl = PAYEMS, unemp = UNEMPLOY) %>%
   mutate(date = ymd(date)) %>%
-  filter(date >= "1980-01-01") %>%
+  filter(date >= "1960-01-01") %>%
   relocate(date)
 
 
@@ -114,7 +115,7 @@ unem <-
          med.term = med.term/unemployed,
          med.long = med.long/unemployed,
          long.term = long.term/unemployed) %>%
-  select(-c(job.finding, unemployed)) %>%
+  select(-c(f, unemployed)) %>%
   pivot_longer(cols = short.term:long.term, names_to = "measure", values_to = "value") %>%
   arrange(measure, date) %>%
   mutate(length = case_when(
@@ -145,24 +146,24 @@ The JOLTS estimates also are affected by nonsampling error. Nonsampling error ca
 
 
 
-## Data
+## Background
 
 As the United States reels from the COVID-19 pandemic's catastrophic economic damage, the tight labor markets from early 2020 seem like a distant memory. Before the COVID-19 pandemic, the U.S. labor market had been steadily improving for years: the unemployment rate was falling for nearly a decade to rates not seen since the late 1960s, and witnessed the longest streak of private sector job creation on record. Given these impressive headline statistics, it may come as a surprise that unemployed workers had slightly more trouble finding a job than they did at the peak of the last business cycle (in 2006) and have a much lower probability of finding a job than in 2000.
 
 One of the more useful indicators is the job seekers ratio, that is, the ratio of unemployed workers to job openings. On average, there were 10.7 million unemployed workers while there were only 6.5 million job openings. This translates into a job seeker ratio of about 1.6 unemployed workers to every job opening. Another way to think about this: for every 16 workers who were officially counted as unemployed, there were only available jobs for 10 of them.
 
-```{r dpi = 600,fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 720,fig.align="center", echo=FALSE, warning = FALSE, message=FALSE}
 df %>%
 ggplot(aes(x = date, y = unemployed/openings)) +
-geom_line(color = prussian) + 
-theme(panel.grid.major.x = element_blank(),
+  geom_line(color = prussian) + 
+  theme(
       panel.grid.major.y = element_blank(),
       legend.position = "bottom",
       legend.title = element_text(size = 10),
       plot.title = element_text(face = "plain"),
-      plot.caption = element_text(hjust = 1, size = 8)) +
+      plot.caption = element_text(hjust = 1, size = 8),
+      text = element_text(color = "black", size = 10)) +
 scale_y_continuous(position = "right") +
-theme(text = element_text(color = "black", size = 10)) + 
 labs(y = "Job Seekers Ratio \n", x = "", fill = "", title = "Figure 1, Job Seeker Ratio",
      caption = "Source: Bureau of Labor Statistics: Job Openings and Labor Turnover Survey")
 ```
@@ -175,7 +176,7 @@ The job-finding rate moves inversely with the unemployment rate, though the corr
 However, the job-finding rate is still slightly lower than in 2006 despite an unemployment rate that is nearly a percentage point lower today. To better understand how the job-finding rate has changed over time and why it remains somewhat lower than one might expect, we look at how the probability of finding a job changes with length of unemployment.
 
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
   df %>%
   mutate(seekers = unemployed/(unemployed + employed),
          vacany = openings/(unemployed + employed)) %>%
@@ -198,7 +199,11 @@ However, the job-finding rate is still slightly lower than in 2006 despite an un
        caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+
+Like the job finding rate, the vacany rate mirrors the unemployment rate.
+
+
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
  df %>%
   mutate(Hires = hires/employed,
          Quits = quits/employed,
@@ -226,7 +231,7 @@ What makes the COVID-19 recession unique is the nature of the initial shock. Whi
 recessions have been primarily caused by economic or financial shocks, the adverse shock to the labor market in 2020 was biological in nature, triggered by a novel virus that forced millions of employees into temporary unemployment by the second quarter of 2020. The record-level rise in temporary unemployment contrasts starkly with past recessions that typically start with an increase in permanent layoffs \citep{elsby10}. The path of job vacancies has also been unusual: while vacancies fell throughout the first half of 2020, the drop was much less pronounced than is typical in most recessions. In fact, vacancies at their lowest level were equal to the level that prevailed in 2015, a time typically considered to be a tight labor market. Thus, while the Beveridge curve – the negative relationship between vacancies and unemployment – typically “loops around” during and after a recession, in the early months of the COVID-19 recession, the increase in the unemployment rate was much larger than the corresponding drop
 in job vacancies. 
 
-``` {r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+``` {r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
 unem %>%
   ggplot(aes(x = date, y = value, group  = order)) +
   geom_area((aes(fill = length)), position = position_stack(reverse = T)) +
@@ -236,6 +241,8 @@ unem %>%
         legend.title = element_text(size = 10),
         plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
   scale_y_continuous(labels = percent_format()) +
   scale_fill_tableau("Miller Stone") +
   theme(text = element_text(color = "black", size = 10)) + 
@@ -245,32 +252,10 @@ unem %>%
 ```
 
 
-One of the most direct measures of declining labor market
-dynamism is the rate of job creation. Job creation combines
-the employment gains at new and growing establishments.
-While there has been some cyclical fluctuation, job creation
-as a share of employment has been on a long downward trend
-since the early 1990s \citep{davis14}. At the same time, workers
-are increasingly less likely to switch jobs. This decline matters for wage growth. First, at least one-third of all hires are made among those already employed, suggesting that job switching is a major part of how workers’ careers evolve. Second, part of the decline in hiring comes from the decline in job switching. Indeed, more
-than 40 percent of the decline in hires and separations can be
-ascribed to declining job-to-job transitions \citep{Hyatt13}. Given that workers generally receive a raise when they transition directly from one job to another, declining job switching has put downward pressure on wage growth.
+One of the most direct measures of declining labor market dynamism is the rate of job creation. Job creation combines the employment gains at new and growing establishments. While there has been some cyclical fluctuation, job creation as a share of employment has been on a long downward trend since the early 1990s \citep{davis14}. We can visualize the outcome of this declining trend in the employment growth rate of Figure 5. Up until the early 1990s, employment growth in the United States rebounded from recessions, but this pattern erroded during the mid to late 1990s and has continued since.
 
-``` {r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
-mydf %>%
-  filter(date <= "2020/01/01") %>%
-  ggplot(aes(x = date, y = (empl - lag(empl, n = 12))/empl)) +
-  geom_line(color = sapphire) + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        legend.position = "bottom",
-        legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
-        plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(labels = percent_format(), position = "right") +
-  theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Employment growth \n", x = "", fill = "", title = "Employment growth",
-       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
-```
+At the same time, workers are increasingly less likely to switch jobs. This decline matters for wage growth. First, at least one-third of all hires are made among those already employed, suggesting that job switching is a integral part of how workers’ careers evolve; and second, part of the decline in hiring comes from the decline in job switching. Indeed, more than 40 percent of the decline in hires and separations can be ascribed to declining job-to-job transitions \citep{Hyatt13}. As workers generally receive a raise when they transition directly from one job to another, declining job  switching has put downward pressure on wage growth.
+
 
 These are not the only statistical measures showing declining
 flexibility in the U.S. labor market. There have been substantial
@@ -280,7 +265,121 @@ creation, job destruction, job switching, interstate migration,
 and other indicators of fluidity are combined, \cite{Molloy16} find that labor market fluidity has been on a downward trend since at least the 1980s, and has
 fallen by 10 to 15 percent since the 1990s.
 
-``` {r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+
+``` {r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+mydf %>%
+  filter(date <= "2020/01/01") %>%
+  ggplot(aes(x = date, y = rollmean((empl - lag(empl, n = 1))/lag(empl, n = 1), k = 24, fill = NA))) +
+  geom_line(color = sapphire, size = 0.5) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
+  scale_y_continuous(labels = percent_format(), position = "right") +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Employment growth \n", x = "", fill = "", title = "Figure 5, Employment growth",
+       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
+```
+
+Estimation of the job finding probability comes from a line of research in the so-called "Search-Theoretic" approach to unemployment and duration analysis \citep{Pissarides2000}. Duration analysis has its origins in survival analysis, a branch of statistics for analyzing the expected duration of time until one or more events happen, such as death in biological organisms and failure in mechanical systems \citep{Lanc90}. It involves the modeling of time to event data; in our context, finding a job or becoming unemployed is considered an "event." Since in the social sciences, we are interested in any situation where an individual or family, or firm, and so on begins in an initial state and is either observed to exit the state or is censored.
+
+Duration analysis typically begins by specifying a population distribution for the
+duration, usually conditional on some explanatory variables observed at
+the beginning of the duration. For example, for the population of people who became
+unemployed during a particular period, we might observe education levels, experience, marital status-all measured when the person becomes unemployed-wage on
+prior job, and a measure of unemployment benefits. Then we specify a distribution
+for the unemployment duration conditional on the explanatory variables. Any reasonable distribution reflects the fact that an unemployment duration is non-negative. Once a
+complete conditional distribution has been specified, maximum likelihood
+methods are used to estimate the expected duration.
+
+The hazard function allows us to approximate the probability of exiting the initial state within a short interval, conditional on having survived up to the starting time of the interval. In econometric applications, hazard functions are usually conditional on some covariates.
+
+The survival function $S(t)$, is the probability that a subject survives or in this case endures longer than time $t$. If time is continuous with a  cumulative distribution function (cdf) $F(t)$ then the survival function is 
+\begin{equation}
+\begin{gathered}
+S(t) = \mathrm{P}(\{T > t\}) = \int\limits_{t}^{\infty} f(u)\, du \\[8pt]
+= 1 - F(t)
+\end{gathered}
+\end{equation}
+and this is the probability of "surviving" past time $t$. The density of $T$ can be denoted 
+\[
+f(t) = \frac{\partial F}{\partial t}(t)
+\]
+The probability that a person who has occupied a state for time $t$ leaves it in some short interval $h$ after $t$ is given by,
+\[
+\mathrm{P}(t \leq T < t + h \; | \; T \geq t)
+\]
+The hazard or "exit" function is then,\footnote{In engineering this function is called the "failure rate".}
+\begin{equation}
+\lambda(t) = \lim_{h \;|\, 0} \frac{\mathrm{P}(t \leq T < t + h \; | \; T \geq t)}{h}
+\end{equation}
+
+For each $t$, $\lambda(t)$ is the instantaneous rate of leaving per unit of time.\footnote{This notation follows \cite{Wool01}. \cite{Lanc90} uses $\theta$ in place of the more commonly used $\lambda$ for the hazard rate and uses $dt$ for $h$. Nevertheless, the derivation and formulation in both are equivalent.}
+
+A rough interpretation of $\lambda(t)$ is that it presents the probability of exit from a state in the short interval $h$ after $t$, conditional on the state being occupied at $t$. Put another way, the hazard function gives the probability that a person unemployed for 10 weeks ($\lambda(10)$) will find employment (exit unemployment), whereas the unconditional probability provides the chances that a person will get job at the tenth week of unemployment. That is $\lambda(10)$ gives the probability that a person will find a job between weeks 10 and 11, conditional on being unemployed through week 10.
+
+We can express the hazard function and the unconditional probability of exit in terms of the distribution and the probability density function (pdf) of $T$, which is considered to be a continuous random variable. By the law of conditional probability,
+
+\begin{equation}
+\begin{gathered}
+\frac{\mathrm{P}(t \leq T < t + h \; | \; T \geq t)}{\mathrm{P}(T \geq t)} \\[8pt]
+= \frac{F(t + h) - F(t)}{1 - F(t)}
+\end{gathered}
+\end{equation}
+
+When the cdf is differentiable, we can take the limit of the right-hand side, divided by
+$h$, as $h$ approaches zero:
+
+\begin{equation}
+\begin{gathered}
+\lambda(t) = \lim_{h \to 0} \frac{F(t + h) - F(t)}{h}\cdot \frac{1}{1 - F(t)} \\[8pt]
+= \frac{\partial F}{\partial t}F(t) \cdot \frac{1}{1 - F(t)} \\[8pt]
+= \frac{f(t)}{1 - F(t)} \\[8pt]
+= \frac{f(t)}{S(t)}
+\end{gathered}
+\end{equation}
+
+Because the first derivative of $S(t)$ is $-f(t)$ we can also express the hazard function as
+
+\begin{equation}
+\lambda(t) = - \frac{\partial \ln S(t)}{\partial t}
+\end{equation}
+
+Equation (5) is a differential equation in $t$, whose solution, subject to the initial condition $F(0) = 0$ we arrive through integration
+\begin{equation}
+F(t) = 1 - \exp\left[\int\limits_{0}^{t}\,\lambda(s)\,ds \right], \quad t \geq 0
+\end{equation}
+
+differentiation of equation (6) gives the density of $T$ as
+\begin{equation}
+f(t) = \lambda(t)\exp\left[\int\limits_{0}^{t}\,\lambda(s)\,ds \right],
+\end{equation}
+
+
+The shape of the hazard function is important in many empirical aspects and in the simplest case it is constant $\lambda(t) = \lambda$. This function means that the process driving $T$ is memoryless: the probability of exit in the next interval does not depend on how much time has been spent in the initial state. A constant hazard implies
+\[
+F(t) = 1 - e^{-\lambda t}
+\]
+
+When the hazard function is not constant, we say that the process exhibits duration
+dependence. Assuming that $\lambda(t)$ is differentiable, there is positive duration dependence at time $t$ if $\partial\lambda(t)/\partial t > 0$, then the process exhibits positive duration dependence. Positive duration dependence means simply that the probability of exiting the initial state increases the longer one is in the initial state. If the derivative is negative, however, then there is negative duration dependence; longer spells in the initial decreases the probability of exit.
+
+Figure 6 presents estimates of the hazard function of exiting unemployment (job finding probability) from \cite{Fallick04}.
+
+
+Following the approach of \cite{Shimer12}, we can roughly approximate the hazard rate (job finding probability) as 
+
+\begin{equation}
+F_{t} = 1 - \frac{u_{t} - s_{t}}{u_{t-1}}
+\end{equation}
+
+which expresses the job finding probability as a function of the total unemployment level ("stock") and short term unemployment.
+
+``` {r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
 jfr %>%
   ggplot(aes(x = date, y = rollmean(jfr, k = 12, fill = NA))) +
   geom_line(color = sapphire) + 
@@ -288,34 +387,76 @@ jfr %>%
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(position = "right") +
+  scale_y_continuous(labels = percent_format(), position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Job finding rate \n", x = "", fill = "",
-       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
+  labs(y = "Job finding rate \n", x = "", fill = "", title = "Figure 6",
+       caption = "Source: Current Population Survey, Bureau of Labor Statistics, ")
 ```
 
+\cite{elsby09b} argue that movements in the job finding probability accounted for about 65 percent of unemployment fluctuations prior to the last two recessions, and more in 1990–1991 and 2001. \cite{fujita09} claim a more substantial role for the hazard rate to unemployment (separation rate) but still find that the job finding probability accounts for at least half of the fluctuations in unemployment.
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
 data %>%
-  ggplot(aes(x = date, y = rollmean(job.finding, k = 12, fill = NA, align = "right"))) +
+  filter(date <= "2020-03-01") %>%
+  ggplot(aes(x = date, y = rollmean(f, k = 6, fill = NA))) +
   geom_line(color = sapphire) + 
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
-        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        plot.title = element_text(face = "plain"),
         plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(position = "right") +
+  scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
+  scale_y_continuous(labels = percent_format(), position = "right") +
   theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Job finding rate \n", x = "", fill = "",
+  labs(y = "Job finding rate \n", x = "", fill = "", title = "Figure 7",
        caption = "Source: Current Population Survey, Bureau of Labor Statistics")
 ```
 
 
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
+data %>%
+  filter(date <= "2020-03-01") %>%
+  ggplot(aes(x = date, y = rollmean(f - mean(f), k = 6, fill = NA))) +
+  geom_line(color = sapphire) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
+  scale_y_continuous(labels = percent_format(), position = "right") +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Job finding rate (deviation from mean) \n", x = "", fill = "", title = "Figure 7",
+       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
+```
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
+data %>%
+  filter(date >= "1990-01-01") %>%
+  ggplot(aes(x = date, y = rollmean(f, k = 6, fill = NA))) +
+  geom_line(color = sapphire) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_x_date(breaks = as.Date(c("1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
+  scale_y_continuous(labels = percent_format(), position = "right") +
+  theme(text = element_text(color = "black", size = 10)) + 
+  labs(y = "Job finding rate \n", x = "", fill = "", title = "Figure 9",
+       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
+```
+
+
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
  df %>%
   mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 12, fill = NA),
          Quits = rollmean((quits - lag(quits, n = 12, fill = NA))/lag(quits, n = 12), k = 12, fill = NA),
@@ -335,14 +476,14 @@ data %>%
   labs(y = "Percent \n", 
        x = "", 
        fill = "", 
-       title = "Figure 4, Hires, Quits, & Layoffs (12-month rolling average)",
+       title = "Figure 8, Hires, Quits, & Layoffs (12-month rolling average)",
        caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
 
 The Great Recession obscures the long-run trend of the data. 
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
 df %>% 
   mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 12, fill = NA)) %>%
   ggplot(aes(x = date, y = Hires)) +
@@ -358,37 +499,14 @@ df %>%
   labs(y = "Percent \n", 
        x = "", 
        fill = "",
-       title = "Figure 5, Hiring Rate (12-month rolling average)",
+       title = "Figure 9, Hiring Rate (12-month rolling average)",
        caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
-Adjusting the window to the period after the Great Recession we can see the more recent trend. 
-
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
-df %>% 
-  mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 12, fill = NA)) %>%
-  filter(date >= "2010/01/01") %>%
-  ggplot(aes(x = date, y = Hires)) +
-  geom_line(color = prussian) + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        legend.position = "bottom",
-        legend.title = element_text(size = 10),
-        plot.title = element_text(face = "plain"),
-        plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_y_continuous(labels = percent_format(), position = "right") +
-  theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Percent \n", 
-       x = "", 
-       fill = "",
-       title = "Figure 6, Hiring Rate (12-month rolling average)",
-       caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
-```
-
-Smoothing the signal of the series further we can pick out the declining trend in the hiring rate. 
+Adjusting the window to the period after the Great Recession we can see the more recent trend. Smoothing the signal of the series further we can pick out the declining trend in the hiring rate. 
 
 
-```{r dpi = 600, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
 df %>% 
   mutate(Hires = rollmean((hires - lag(hires, n = 12, fill = NA))/lag(hires, n = 12), k = 24, fill = NA)) %>%
   filter(date >= "2010/01/01") %>%
@@ -405,7 +523,7 @@ df %>%
   labs(y = "Percent \n", 
        x = "", 
        fill = "",
-       title = "Figure 7, Hiring Rate (24-month rolling average)",
+       title = "Figure 10, Hiring Rate (24-month rolling average)",
        caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
@@ -418,7 +536,7 @@ The pandemic is an urgent reminder of what long-term labor trends have been illu
 
 We produce forecasts using a collection of traditional and non-traditional time series methods. This section provides a general overview of the methods used, their benefits, and their limitations. It cannot be emphasized enough that, no matter the strength of a model, it remains exactly that: a model. As such, all statistical models are "wrong." No matter the method used, any model is an attempt to reproduce ("model") the true data generating process of a data series.
 
-## Background
+## Theorectical Background
 For many familiar with the methodology of time series forecasting, this section presents a brief recapitulation of basic concepts which can be found in any standard textbook such as \cite{MJK} or \cite{brockwell02}. For a more advanced treatment, one should see \cite{hamilton94} or \cite{brockwell06}.
 
 Time series analysis is the procedure of using known data values to fit a time series with a suitable model and estimation of the corresponding parameters. It comprises methods that attempt to understand the nature of the time series.

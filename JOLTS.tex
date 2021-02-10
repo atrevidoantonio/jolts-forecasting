@@ -127,8 +127,8 @@ benchmark data used in estimation.\footnote{Nonsampling error occurs
   error. Sampling error estimates are available at the BLS'
   \href{https://www.bls.gov/jlt/jolts_median_standard_errors.htm}{website}}
 
-\hypertarget{data}{%
-\subsection{Data}\label{data}}
+\hypertarget{background}{%
+\subsection{Background}\label{background}}
 
 As the United States reels from the COVID-19 pandemic's catastrophic
 economic damage, the tight labor markets from early 2020 seem like a
@@ -177,6 +177,9 @@ unemployment.
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-6-1} \end{center}
 
+Like the job finding rate, the vacany rate mirrors the unemployment
+rate.
+
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-7-1} \end{center}
 
 What makes the COVID-19 recession unique is the nature of the initial
@@ -203,19 +206,22 @@ One of the most direct measures of declining labor market dynamism is
 the rate of job creation. Job creation combines the employment gains at
 new and growing establishments. While there has been some cyclical
 fluctuation, job creation as a share of employment has been on a long
-downward trend since the early 1990s \citep{davis14}. At the same time,
-workers are increasingly less likely to switch jobs. This decline
-matters for wage growth. First, at least one-third of all hires are made
-among those already employed, suggesting that job switching is a major
-part of how workers' careers evolve. Second, part of the decline in
-hiring comes from the decline in job switching. Indeed, more than 40
-percent of the decline in hires and separations can be ascribed to
-declining job-to-job transitions \citep{Hyatt13}. Given that workers
-generally receive a raise when they transition directly from one job to
-another, declining job switching has put downward pressure on wage
-growth.
+downward trend since the early 1990s \citep{davis14}. We can visualize
+the outcome of this declining trend in the employment growth rate of
+Figure 5. Up until the early 1990s, employment growth in the United
+States rebounded from recessions, but this pattern erroded during the
+mid to late 1990s and has continued since.
 
-\begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-9-1} \end{center}
+At the same time, workers are increasingly less likely to switch jobs.
+This decline matters for wage growth. First, at least one-third of all
+hires are made among those already employed, suggesting that job
+switching is a integral part of how workers' careers evolve; and second,
+part of the decline in hiring comes from the decline in job switching.
+Indeed, more than 40 percent of the decline in hires and separations can
+be ascribed to declining job-to-job transitions \citep{Hyatt13}. As
+workers generally receive a raise when they transition directly from one
+job to another, declining job switching has put downward pressure on
+wage growth.
 
 These are not the only statistical measures showing declining
 flexibility in the U.S. labor market. There have been substantial
@@ -226,25 +232,172 @@ of fluidity are combined, \cite{Molloy16} find that labor market
 fluidity has been on a downward trend since at least the 1980s, and has
 fallen by 10 to 15 percent since the 1990s.
 
+\begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-9-1} \end{center}
+
+Estimation of the job finding probability comes from a line of research
+in the so-called ``Search-Theoretic'' approach to unemployment and
+duration analysis \citep{Pissarides2000}. Duration analysis has its
+origins in survival analysis, a branch of statistics for analyzing the
+expected duration of time until one or more events happen, such as death
+in biological organisms and failure in mechanical systems
+\citep{Lanc90}. It involves the modeling of time to event data; in our
+context, finding a job or becoming unemployed is considered an
+``event.'' Since in the social sciences, we are interested in any
+situation where an individual or family, or firm, and so on begins in an
+initial state and is either observed to exit the state or is censored.
+
+Duration analysis typically begins by specifying a population
+distribution for the duration, usually conditional on some explanatory
+variables observed at the beginning of the duration. For example, for
+the population of people who became unemployed during a particular
+period, we might observe education levels, experience, marital
+status-all measured when the person becomes unemployed-wage on prior
+job, and a measure of unemployment benefits. Then we specify a
+distribution for the unemployment duration conditional on the
+explanatory variables. Any reasonable distribution reflects the fact
+that an unemployment duration is non-negative. Once a complete
+conditional distribution has been specified, maximum likelihood methods
+are used to estimate the expected duration.
+
+The hazard function allows us to approximate the probability of exiting
+the initial state within a short interval, conditional on having
+survived up to the starting time of the interval. In econometric
+applications, hazard functions are usually conditional on some
+covariates.
+
+The survival function \(S(t)\), is the probability that a subject
+survives or in this case endures longer than time \(t\). If time is
+continuous with a cumulative distribution function (cdf) \(F(t)\) then
+the survival function is \begin{equation}
+\begin{gathered}
+S(t) = \mathrm{P}(\{T > t\}) = \int\limits_{t}^{\infty} f(u)\, du \\[8pt]
+= 1 - F(t)
+\end{gathered}
+\end{equation} and this is the probability of ``surviving'' past time
+\(t\). The density of \(T\) can be denoted \[
+f(t) = \frac{\partial F}{\partial t}(t)
+\] The probability that a person who has occupied a state for time \(t\)
+leaves it in some short interval \(h\) after \(t\) is given by, \[
+\mathrm{P}(t \leq T < t + h \; | \; T \geq t)
+\] The hazard or ``exit'' function is
+then,\footnote{In engineering this function is called the "failure rate".}
+\begin{equation}
+\lambda(t) = \lim_{h \;|\, 0} \frac{\mathrm{P}(t \leq T < t + h \; | \; T \geq t)}{h}
+\end{equation}
+
+For each \(t\), \(\lambda(t)\) is the instantaneous rate of leaving per
+unit of
+time.\footnote{This notation follows \cite{Wool01}. \cite{Lanc90} uses $\theta$ in place of the more commonly used $\lambda$ for the hazard rate and uses $dt$ for $h$. Nevertheless, the derivation and formulation in both are equivalent.}
+
+A rough interpretation of \(\lambda(t)\) is that it presents the
+probability of exit from a state in the short interval \(h\) after
+\(t\), conditional on the state being occupied at \(t\). Put another
+way, the hazard function gives the probability that a person unemployed
+for 10 weeks (\(\lambda(10)\)) will find employment (exit unemployment),
+whereas the unconditional probability provides the chances that a person
+will get job at the tenth week of unemployment. That is \(\lambda(10)\)
+gives the probability that a person will find a job between weeks 10 and
+11, conditional on being unemployed through week 10.
+
+We can express the hazard function and the unconditional probability of
+exit in terms of the distribution and the probability density function
+(pdf) of \(T\), which is considered to be a continuous random variable.
+By the law of conditional probability,
+
+\begin{equation}
+\begin{gathered}
+\frac{\mathrm{P}(t \leq T < t + h \; | \; T \geq t)}{\mathrm{P}(T \geq t)} \\[8pt]
+= \frac{F(t + h) - F(t)}{1 - F(t)}
+\end{gathered}
+\end{equation}
+
+When the cdf is differentiable, we can take the limit of the right-hand
+side, divided by \(h\), as \(h\) approaches zero:
+
+\begin{equation}
+\begin{gathered}
+\lambda(t) = \lim_{h \to 0} \frac{F(t + h) - F(t)}{h}\cdot \frac{1}{1 - F(t)} \\[8pt]
+= \frac{\partial F}{\partial t}F(t) \cdot \frac{1}{1 - F(t)} \\[8pt]
+= \frac{f(t)}{1 - F(t)} \\[8pt]
+= \frac{f(t)}{S(t)}
+\end{gathered}
+\end{equation}
+
+Because the first derivative of \(S(t)\) is \(-f(t)\) we can also
+express the hazard function as
+
+\begin{equation}
+\lambda(t) = - \frac{\partial \ln S(t)}{\partial t}
+\end{equation}
+
+Equation (5) is a differential equation in \(t\), whose solution,
+subject to the initial condition \(F(0) = 0\) we arrive through
+integration \begin{equation}
+F(t) = 1 - \exp\left[\int\limits_{0}^{t}\,\lambda(s)\,ds \right], \quad t \geq 0
+\end{equation}
+
+differentiation of equation (6) gives the density of \(T\) as
+\begin{equation}
+f(t) = \lambda(t)\exp\left[\int\limits_{0}^{t}\,\lambda(s)\,ds \right],
+\end{equation}
+
+The shape of the hazard function is important in many empirical aspects
+and in the simplest case it is constant \(\lambda(t) = \lambda\). This
+function means that the process driving \(T\) is memoryless: the
+probability of exit in the next interval does not depend on how much
+time has been spent in the initial state. A constant hazard implies \[
+F(t) = 1 - e^{-\lambda t}
+\]
+
+When the hazard function is not constant, we say that the process
+exhibits duration dependence. Assuming that \(\lambda(t)\) is
+differentiable, there is positive duration dependence at time \(t\) if
+\(\partial\lambda(t)/\partial t > 0\), then the process exhibits
+positive duration dependence. Positive duration dependence means simply
+that the probability of exiting the initial state increases the longer
+one is in the initial state. If the derivative is negative, however,
+then there is negative duration dependence; longer spells in the initial
+decreases the probability of exit.
+
+Figure 6 presents estimates of the hazard function of exiting
+unemployment (job finding probability) from \cite{Fallick04}.
+
+Following the approach of \cite{Shimer12}, we can roughly approximate
+the hazard rate (job finding probability) as
+
+\begin{equation}
+F_{t} = 1 - \frac{u_{t} - s_{t}}{u_{t-1}}
+\end{equation}
+
+which expresses the job finding probability as a function of the total
+unemployment level (``stock'') and short term unemployment.
+
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-10-1} \end{center}
+
+\cite{elsby09b} argue that movements in the job finding probability
+accounted for about 65 percent of unemployment fluctuations prior to the
+last two recessions, and more in 1990--1991 and 2001. \cite{fujita09}
+claim a more substantial role for the hazard rate to unemployment
+(separation rate) but still find that the job finding probability
+accounts for at least half of the fluctuations in unemployment.
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-11-1} \end{center}
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-12-1} \end{center}
 
-The Great Recession obscures the long-run trend of the data.
-
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-13-1} \end{center}
-
-Adjusting the window to the period after the Great Recession we can see
-the more recent trend.
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-14-1} \end{center}
 
-Smoothing the signal of the series further we can pick out the declining
-trend in the hiring rate.
+The Great Recession obscures the long-run trend of the data.
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-15-1} \end{center}
+
+Adjusting the window to the period after the Great Recession we can see
+the more recent trend. Smoothing the signal of the series further we can
+pick out the declining trend in the hiring rate.
+
+\begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-16-1} \end{center}
 
 The unusual nature of the COVID-19 recession makes it difficult to draw
 on experiences from past recessions to project how the labor market will
@@ -282,8 +435,8 @@ remains exactly that: a model. As such, all statistical models are
 ``wrong.'' No matter the method used, any model is an attempt to
 reproduce (``model'') the true data generating process of a data series.
 
-\hypertarget{background}{%
-\subsection{Background}\label{background}}
+\hypertarget{theorectical-background}{%
+\subsection{Theorectical Background}\label{theorectical-background}}
 
 For many familiar with the methodology of time series forecasting, this
 section presents a brief recapitulation of basic concepts which can be
