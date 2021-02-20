@@ -20,7 +20,7 @@ biblio-style: aea
 fontsize: 11pt
 urlcolor: blue
 linkcolor: blue
-geometry: width = 135mm, top = 10mm, bottom = 20mm
+geometry: width = 140mm, top = 10mm, bottom = 20mm
 
 ---
 
@@ -50,8 +50,12 @@ babyblue <- "#47AFFF"
 prussian <- "#113255"
 sapphire <- "#255F85"
 mint <- "#B2EDC5"
-meadow <- "#1EC296"
-colors <- c("#418B82","#5F8DBF", "#255F85", "#B2EDC5")
+celadon <- "#5F8DBF"
+violet <- "#AA78A6"
+jeans <- "#418B82"
+colors <- c(jeans, celadon, sapphire, mint)
+colors2 <- c(jeans, celadon, sapphire, raspberry, violet)
+
 ggthemr('fresh')
 
 ```
@@ -84,7 +88,7 @@ reformat()
 ```{r include = F}
 
 data <-
-  map_dfr(c("PAYEMS", "UEMPLT5", "UEMP5TO14", "UEMP15T26", "UEMP27OV", "UNEMPLOY"), fredr) %>%
+  map_dfr(c("PAYEMS", "UEMPLT5", "UEMP5TO14", "UEMP15T26", "UEMP27OV", "UNEMPLOY", "UEMPMEAN"), fredr) %>%
   pivot_wider(names_from = series_id, values_from = value) %>%
   rename(
     empl = PAYEMS,
@@ -92,7 +96,8 @@ data <-
     med.term = UEMP5TO14,
     med.long = UEMP15T26,
     long.term = UEMP27OV,
-    unemployed = UNEMPLOY) %>%
+    unemployed = UNEMPLOY,
+    weeks = UEMPMEAN) %>%
   mutate(date = ymd(date),
          f = 1 - ((lead(unemployed, n = 1) - lead(short.term, n = 1))/unemployed)) %>%
   mutate(f2 = -log(1 - f)) %>%
@@ -130,13 +135,16 @@ unem <- unem[order(unem$order),]
 ```
 ## Introduction
 
-The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths).
+How well the labor market is performing is a much more complicated process than simply asking what the current unemployment rate is. While a lower rate of unemployment is surely an important indicator of the strength of the labor market, there are many factors that are of equal importance. But why are labor market conditions so important? Labor market conditions are prominent in the monetary policy deliberations of the Federal Reserve’s Federal Open Market Committee (FOMC). The objectives Congress gave the Fed for monetary policy are "maximum employment, stable prices, and moderate long-term interest rates." It's natural then that labor market conditions are an integral part of monetary policy deliberations.
 
+As part of the process of tracking labor market conditions, the Bureau of Labor Statistics (BLS), created the Job Openings and Labor Turnover Survey (JOLTS), which tells us how many job openings there are each month, how many workers were hired, how many quit their job, how many were laid off, and how many experienced other separations (which includes worker deaths). Prior to JOLTS, there was no economic indicator of the unmet demand for labor with which to assess the presence or extent of labor shortages in the United States. 
+
+We review some of the theoretical literature and stylized facts regarding the labor market in the United States. This document is by no means a thorough review of all the literature on the subject, but it does aim to present the leading theories and evidence. For those unfamiliar with the concepts in time series methodologies, there is a brief overview of the main methods and guiding principles.  
+
+## Data 
 The JOLTS survey design is a stratified random sample of 20,700 nonfarm business and government establishments. The sample is stratified by ownership, region, industry sector, and establishment size class. The establishments are drawn from a universe of over 9.4 million establishments compiled by the Quarterly Census of Employment and Wages (QCEW) program which includes all employers subject to state unemployment insurance laws and federal agencies subject to the Unemployment Compensation for Federal Employees program.
 
 Employment estimates are benchmarked, or ratio adjusted, monthly to the strike-adjusted employment estimates of the Current Employment Statistics (CES) survey. A ratio of CES to JOLTS employment is used to adjust the levels for all other JOLTS data elements.
-
-JOLTS data provide information on all pieces that go into the net change in the number of jobs. These components include hires, layoffs, voluntary quits, and other job separations (which includes retirements and worker deaths). Putting those components together reveals the overall (or net) change. JOLTS data provide information about the end of one month to the end of the next, whereas the monthly employment numbers provide information from the middle of one month to the middle of the next. 
 
 The JOLTS estimates also are affected by nonsampling error. Nonsampling error can occur for many reasons including: the failure to include a segment of the population; the inability to obtain data from all units in the sample; the inability or unwillingness of respondents to provide data on a timely basis; mistakes made by respondents; errors made in the collection or processing of the data; and errors from the employment benchmark data used in estimation.^[Nonsampling error occurs when a sample is surveyed rather than the entire population. Which means that there is a chance that the sample estimates may differ from the true population values they represent. The difference, or sampling error, varies depending on the particular sample selected. This variability is measured by the standard error of the estimate. BLS analysis is generally conducted at the 90-percent level of confidence. That means that there is a 90-percent chance, or level of confidence, that an estimate based on a sample will differ by no more than 1.6 standard errors from the true population value because of sampling error. Sampling error estimates are available at the BLS' [website](https://www.bls.gov/jlt/jolts_median_standard_errors.htm)]
 
@@ -153,9 +161,9 @@ The path of job vacancies has also been unusual: while vacancies fell throughout
 
 ```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
   df %>%
-  mutate(seekers = unemployed/(unemployed + employed),
+  mutate(unemp = unemployed/(unemployed + employed),
          vacany = openings/(unemployed + employed)) %>%
-  gather(measure, value, seekers, vacany) %>%
+  gather(measure, value, unemp, vacany) %>%
   ggplot(aes(x = date, y = value, color = measure)) +
   geom_line() +
   theme(panel.grid.major.x = element_blank(),
@@ -170,7 +178,7 @@ The path of job vacancies has also been unusual: while vacancies fell throughout
   labs(y = "Percent \n",
        x = "", 
        fill = "", 
-       title = "Figure 1, Unemployment, Vacany,and Job Finding Rate",
+       title = "Figure 1, Unemployment and Vacany Rate",
        caption = "Source: Bureau of Labor Statistics, Job Openings and Labor Turnover Survey")
 ```
 
@@ -402,8 +410,10 @@ data %>%
 ```
 
 
+\cite{Shimer12} argues that fluctuations in the unemployment rate are mostly explained by fluctuations in job finding rates or transitions out of unemployment ("Outs") rather than by fluctuations in job separation rates or transition into unemployment ("Ins"). This implies that the unemployment rate fluctuates over the business cycle not because workers lose their jobs but because workers have a hard time finding a job.
+
 The declining job finding probability is worrying for a number of reasons. A
-large literature documents that a particular type of long-term unemployment - those resulting from job losses during mass layoffs - leave a very persistent “scarring” effect on the future earnings of displaced workers. \footnote{A displaced worker is someone who lost their job through no fault of their own, typically this means they were "laid off."} Future earnings of people who experienced prolonged spells of unemployment decline by as much as 20 percent \cite{davis10}. Furthermore, due to negative duration dependence, the probability of receiving a callback for an interview significantly decreases with the length of a worker's unemployment spell, with the majority of this decline occurring during the first eight months \cite{kroft13}. In short, what economists call "negative duration dependence" undermines the functioning of the labor market and generates large social costs.
+large literature documents that a particular type of long-term unemployment - those resulting from job losses during mass layoffs - leave a very persistent “scarring” effect on the future earnings of displaced workers.\footnote{A displaced worker is someone who lost their job through no fault of their own, typically this means they were "laid off."} Future earnings of people who experienced prolonged spells of unemployment decline by as much as 20 percent \cite{davis10}. A more recent study by \cite{Guvenen17} finds that the loss is potentially larger at around 35-40 percent. Furthermore, due to negative duration dependence, the probability of receiving a callback for an interview significantly decreases with the length of a worker's unemployment spell, with the majority of this decline occurring during the first eight months \cite{kroft13}. In short, what economists call "negative duration dependence" undermines the functioning of the labor market and generates large social costs.
 
 ```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
 data %>%
@@ -431,25 +441,6 @@ data %>%
 
 The unusual nature of the COVID-19 recession makes it difficult to draw on experiences from past recessions to project how the labor market will evolve in the months ahead. For example, during the Great Recession, the initial wave of layoffs was subsequently followed by a prolonged period of lower job finding rates \citep{elsby09}. This led to a significant increase in the long-term unemployment share, which in turn prolonged the recession through negative duration dependence \citep{krueger14}. Currently available data suggest that the dynamics of the COVID-19 recession may play out quite differently. Looking more closely at the last two decades in Figure 8 we see that job finding rates have not decreased as substantially as they did in the Great Recession. 
 
-```{r dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
-data %>%
-  filter(date >= "1990-01-01") %>%
-  ggplot(aes(x = date, y = rollmean(f2, k = 6, fill = NA))) +
-  geom_line(color = sapphire) + 
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        legend.position = "bottom",
-        legend.title = element_text(size = 10),
-        plot.title = element_text(face = "plain"),
-        plot.caption = element_text(hjust = 1, size = 8)) +
-  scale_x_date(breaks = as.Date(c("1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
-               labels = date_format(format = "%Y")) +
-  scale_y_continuous(labels = percent_format(), position = "right") +
-  theme(text = element_text(color = "black", size = 10)) + 
-  labs(y = "Job finding rate \n", x = "", fill = "", title = "Figure 8",
-       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
-```
-
 The pandemic is an urgent reminder of what long-term labor trends have been illustrating for years: low-wage workers need better pathways into decent jobs, and from shrinking occupations to the jobs of tomorrow. Policymakers face a dual imperative: to facilitate safe reemployment as soon as possible, even as COVID-19 continues to surge in many parts of the country, while also helping low-wage workers on the journey to jobs with dignity, stability, and a fair shot at economic mobility. While the risk of mass unemployment has already spurred large public expenditures, more funding and efforts are needed to ensure opportunity reaches those who need it the most.
 
 ## Methods
@@ -463,9 +454,9 @@ Time series analysis is the procedure of using known data values to fit a time s
 
 A major assumption that often provides relief in modeling efforts is the linearity assumption. A linear filter, for example, is a linear operation from one time series $x_{t}$ to another time series $y_{t}$.
 
-$$
+\begin{equation}
 E[y_{t}] = L(x_{t}) = A(L^{i})\epsilon_{t} = \left(\sum\limits_{-\infty}^{\infty} \psi_{i}L^{i}\right)\epsilon_{t} = \mu + \sum\limits_{-\infty}^{\infty}\psi_{i}\epsilon_{t-i},
-$$
+\end{equation}
 
 where $\epsilon \sim \mathcal{N}(0, \sigma^{2})$ and $L^{i}$ is the Lag or Backshift Operator defined as,
 

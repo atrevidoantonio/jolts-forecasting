@@ -46,7 +46,7 @@
   urlcolor=blue,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
-\usepackage[width = 135mm, top = 10mm, bottom = 20mm]{geometry}
+\usepackage[width = 140mm, top = 10mm, bottom = 20mm]{geometry}
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -80,10 +80,32 @@
 \hypertarget{introduction}{%
 \subsection{Introduction}\label{introduction}}
 
+How well the labor market is performing is a much more complicated
+process than simply asking what the current unemployment rate is. While
+a lower rate of unemployment is surely an important indicator of the
+strength of the labor market, there are many factors that are of equal
+importance. But why are labor market conditions so important? Labor
+market conditions are prominent in the monetary policy deliberations of
+the Federal Reserve's Federal Open Market Committee (FOMC). The
+objectives Congress gave the Fed for monetary policy are ``maximum
+employment, stable prices, and moderate long-term interest rates.'' It's
+natural then that labor market conditions are an integral part of
+monetary policy deliberations.
+
 The Job Openings and Labor Turnover Survey (JOLTS) tells us how many job
 openings there are each month, how many workers were hired, how many
 quit their job, how many were laid off, and how many experienced other
 separations (which includes worker deaths).
+
+We review some of the theoretical literature and stylized facts
+regarding the labor market in the United States. This document is by no
+means a thorough review of all the literature on the subject, but it
+does aim to present the leading theories and evidence. For those
+unfamiliar with the concepts in time series methodologies, there is a
+brief overview of the main methods and guiding principles.
+
+\hypertarget{data}{%
+\subsection{Data}\label{data}}
 
 The JOLTS survey design is a stratified random sample of 20,700 nonfarm
 business and government establishments. The sample is stratified by
@@ -98,15 +120,6 @@ Employment estimates are benchmarked, or ratio adjusted, monthly to the
 strike-adjusted employment estimates of the Current Employment
 Statistics (CES) survey. A ratio of CES to JOLTS employment is used to
 adjust the levels for all other JOLTS data elements.
-
-JOLTS data provide information on all pieces that go into the net change
-in the number of jobs. These components include hires, layoffs,
-voluntary quits, and other job separations (which includes retirements
-and worker deaths). Putting those components together reveals the
-overall (or net) change. JOLTS data provide information about the end of
-one month to the end of the next, whereas the monthly employment numbers
-provide information from the middle of one month to the middle of the
-next.
 
 The JOLTS estimates also are affected by nonsampling error. Nonsampling
 error can occur for many reasons including: the failure to include a
@@ -401,22 +414,35 @@ continuous-time outflow hazard as,
 f_{t} = - \ln(1 - F_{t})
 \end{equation}
 
+Calculating this measure from BLS aggregate unemployment duration flows
+allows us to look at a longer view of the job finding probability in
+Figure 6.
+
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-10-1} \end{center}
+
+\cite{Shimer12} argues that fluctuations in the unemployment rate are
+mostly explained by fluctuations in job finding rates or transitions out
+of unemployment (``Outs'') rather than by fluctuations in job separation
+rates or transition into unemployment (``Ins''). This implies that the
+unemployment rate fluctuates over the business cycle not because workers
+lose their jobs but because workers have a hard time finding a job.
 
 The declining job finding probability is worrying for a number of
 reasons. A large literature documents that a particular type of
 long-term unemployment - those resulting from job losses during mass
 layoffs - leave a very persistent ``scarring'' effect on the future
 earnings of displaced
-workers\footnote{A displaced worker is someone who lost their job through no fault of their own, typically this means they were "laid off."}
+workers.\footnote{A displaced worker is someone who lost their job through no fault of their own, typically this means they were "laid off."}
 Future earnings of people who experienced prolonged spells of
-unemployment decline by as much as 20 percent \cite{davis10}.
-Furthermore, due to negative duration dependence, the probability of
-receiving a callback for an interview significantly decreases with the
-length of a worker's unemployment spell, with the majority of this
-decline occurring during the first eight months \cite{kroft13}. In
-short, what economists call ``negative duration dependence'' undermines
-the functioning of the labor market and generates large social costs.
+unemployment decline by as much as 20 percent \cite{davis10}. A more
+recent study by \cite{Guvenen17} finds that the loss is potentially
+larger at around 35-40 percent. Furthermore, due to negative duration
+dependence, the probability of receiving a callback for an interview
+significantly decreases with the length of a worker's unemployment
+spell, with the majority of this decline occurring during the first
+eight months \cite{kroft13}. In short, what economists call ``negative
+duration dependence'' undermines the functioning of the labor market and
+generates large social costs.
 
 \begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-11-1} \end{center}
 
@@ -431,8 +457,6 @@ Currently available data suggest that the dynamics of the COVID-19
 recession may play out quite differently. Looking more closely at the
 last two decades in Figure 8 we see that job finding rates have not
 decreased as substantially as they did in the Great Recession.
-
-\begin{center}\includegraphics{JOLTS_files/figure-latex/unnamed-chunk-12-1} \end{center}
 
 The pandemic is an urgent reminder of what long-term labor trends have
 been illustrating for years: low-wage workers need better pathways into
@@ -475,9 +499,9 @@ linearity assumption. A linear filter, for example, is a linear
 operation from one time series \(x_{t}\) to another time series
 \(y_{t}\).
 
-\[
+\begin{equation}
 E[y_{t}] = L(x_{t}) = A(L^{i})\epsilon_{t} = \left(\sum\limits_{-\infty}^{\infty} \psi_{i}L^{i}\right)\epsilon_{t} = \mu + \sum\limits_{-\infty}^{\infty}\psi_{i}\epsilon_{t-i},
-\]
+\end{equation}
 
 where \(\epsilon \sim \mathcal{N}(0, \sigma^{2})\) and \(L^{i}\) is the
 Lag or Backshift Operator defined as,
