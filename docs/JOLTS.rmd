@@ -4,7 +4,7 @@ fontfamily: nimbusserif
 output:
   pdf_document:
     keep_tex: true
-    latex_engine: pdflatex
+    latex_engine: html
     citation_package: natbib
     df_print: paged
   fig_width: 6.5
@@ -21,6 +21,11 @@ fontsize: 11pt
 urlcolor: blue
 linkcolor: blue
 geometry: width = 140mm, top = 10mm, bottom = 20mm
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 
 ---
 
