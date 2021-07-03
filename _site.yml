@@ -5,6 +5,10 @@ navbar:
   left:
     - text: "Home"
       href: index.html
+    - text: "Technical Stuff"
+      href: JOLTS.html
+    - text: "Overview"
+      href: welcome.html
 output:
   html_document:
     theme: flatly
