@@ -21,13 +21,6 @@ urlcolor: blue
 linkcolor: blue
 geometry: width = 140mm, top = 10mm, bottom = 20mm
 ---
-<style type = "text/css">
-  body{
-  font-family: 'Roboto', sans-serif;
-}
-</style>
- 
-
 ```{r setup, include = FALSE}
 library(knitr)
 library(ggplot2)
