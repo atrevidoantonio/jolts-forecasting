@@ -1,0 +1,102 @@
+---
+title: "Welcome"
+output:
+  tint::tintHtml: default
+  tint::tintPdf:
+    citation_package: natbib
+    latex_engine: pdflatex
+bibliography: references.bib
+link-citations: yes
+fontsize: 10pt
+---
+
+<style type="text/css">
+body, td {
+   font-size: 10px;
+}
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 14px
+}
+</style>
+
+```{r setup, include = FALSE}
+library(tint)
+# invalidate cache when the package version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tint'))
+options(htmltools.dir.version = FALSE)
+library(knitr)
+library(ggplot2)
+library(tinytex)
+library(ggthemes)
+library(boot)
+library(ggthemr)
+library(tidyverse)
+library(dplyr)
+library(scales)
+library(tidyr)
+library(blscrapeR)
+library(purrr)
+library(lubridate)
+library(zoo)
+library(fredr)
+library(readr)
+```
+
+```{r themes, include = FALSE}
+raspberry <- "#DB2955"
+babyblue <- "#47AFFF"
+prussian <- "#113255"
+sapphire <- "#255F85"
+mint <- "#B2EDC5"
+celadon <- "#5F8DBF"
+violet <- "#AA78A6"
+jeans <- "#418B82"
+colors <- c(jeans, celadon, sapphire, mint)
+colors2 <- c(jeans, celadon, sapphire, raspberry, violet)
+
+ggthemr(palette = "fresh", layout = "clean", line_weight = 0.5)
+```
+
+```{r data, include = FALSE}
+data <-
+  map_dfr(c("PAYEMS", "UEMPLT5", "UEMP5TO14", "UEMP15T26", "UEMP27OV", "UNEMPLOY", "UEMPMEAN"), fredr) %>%
+  pivot_wider(names_from = series_id, values_from = value) %>%
+  rename(
+    empl = PAYEMS,
+    short.term = UEMPLT5, 
+    med.term = UEMP5TO14,
+    med.long = UEMP15T26,
+    long.term = UEMP27OV,
+    unemployed = UNEMPLOY,
+    weeks = UEMPMEAN) %>%
+  mutate(date = ymd(date),
+         f = 1 - ((lead(unemployed, n = 1) - lead(short.term, n = 1))/unemployed)) %>%
+  mutate(f2 = -log(1 - f)) %>%
+  filter(date >= "1960-01-01") %>%
+  relocate(date)
+```
+
+Forecasting is a difficult task to undertake. 
+
+
+``` {r figure, dpi = 720, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE}
+data %>%
+  filter(date <= "2020-02-01") %>%
+  ggplot(aes(x = date, y = rollmean(f2, k = 24, fill = NA))) +
+  geom_line(color = sapphire) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        plot.title = element_text(face = "plain"),
+        plot.caption = element_text(hjust = 1, size = 8)) +
+  scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
+               labels = date_format(format = "%Y")) +
+  scale_y_continuous(labels = percent_format(), position = "right") +
+  theme(text = element_text(color = "black", size = 10, family = "Open Sans")) + 
+  labs(y = "Job finding rate \n", x = "", fill = "", title = "Job Finding Probability",
+       caption = "Source: Current Population Survey, Bureau of Labor Statistics")
+```
