@@ -1,3 +1,11 @@
 ---
 title: "JOLTS Forecasting"
+output:
+  html_document:
+    css: "style.css"
+urlcolor: blue
+linkcolor: blue
+
 ---
+
+>"All models are approximations. Assumptions, whether implied or clearly stated, are never exactly true. All models are wrong, but some models are useful. So the question you need to ask is not  "Is the model true?" (it never is) but "Is the model good enough for this particular application?" --George Box

@@ -1,7 +1,20 @@
-<style type="text/css">
-{
+code {
   font-family: Roboto Condensed, sans-serif;
-  text-align: center;
-  color: #fff;
 }
-</style>
+header {
+    font-family: Roboto Condensed, sans-serif;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.64em;
+    color: black;
+}
+body {
+  color: black;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: medium;
+  text-align: justify;
+  line-height: 1.45;
+  margin: 7rem auto 1.5rem;
+  max-width: 75rem;
+  padding: .25rem;
+}

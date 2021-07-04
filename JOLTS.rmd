@@ -1,6 +1,7 @@
 ---
 output:
-  tint::tintHtml: default
+  html_document:
+    css: "style.css"
   pdf_document:
     fig_width: 6
     fig_height: 5
@@ -11,12 +12,14 @@ output:
       in_header: "preamble.tex"
 bibliography: references.bib
 biblio-style: aea
-fontsize: 11pt
 urlcolor: blue
 linkcolor: blue
 geometry: width = 140mm, top = 10mm, bottom = 20mm
 ---
 ```{r setup, include = FALSE}
+library(tint)
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE, cache.extra = packageVersion('tint'))
+
 library(knitr)
 library(ggplot2)
 library(tinytex)
@@ -239,7 +242,7 @@ f_{t} = - \ln(1 - F_{t})
 
 Calculating this measure from BLS aggregate unemployment duration flows allows us to look at a longer view of the job finding probability. 
 
-```{r fig6, dpi = 360, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
+```{r fig6, dpi = 580, fig.align="center", echo = FALSE, warning = FALSE, message=FALSE }
 data %>%
   filter(date <= "2020-02-01") %>%
   ggplot(aes(x = date, y = rollmean(f2, k = 6, fill = NA))) +
@@ -252,7 +255,7 @@ data %>%
   scale_x_date(breaks = as.Date(c("1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01")),
                labels = date_format(format = "%Y")) +
   scale_y_continuous(labels = percent_format(), position = "right") +
-  theme(text = element_text(color = "black", size = 10)) + 
+  theme(text = element_text(color = "black")) + 
   labs(y = "Job finding rate \n", x = "", fill = "", title = "Figure 6, Job Finding Probability, A Longer View",
        caption = "Source: Current Population Survey, Bureau of Labor Statistics")
 ```

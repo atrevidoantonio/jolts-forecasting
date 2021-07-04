@@ -1,7 +1,6 @@
 name: "JOLTS Forecasting"
 output_dir: "."
 navbar:
-  title: "Introduction"
   left:
     - text: "Home"
       href: index.html
@@ -12,4 +11,3 @@ navbar:
 output:
   html_document:
     theme: flatly
-    css: style.css
